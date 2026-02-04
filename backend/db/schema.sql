@@ -1,12 +1,22 @@
 -- SQL schema for BloodLine emergency system
 
+-- users table (store auth user id + email + role)
+CREATE TABLE IF NOT EXISTS users (
+  id uuid PRIMARY KEY,
+  email text UNIQUE NOT NULL,
+  role text NOT NULL CHECK (role IN ('donor','hospital','admin')),
+  created_at timestamptz DEFAULT now()
+);
+
 -- profiles table (already expected by frontend/backend)
 CREATE TABLE IF NOT EXISTS profiles (
-  id uuid PRIMARY KEY,
+  id uuid PRIMARY KEY REFERENCES users(id),
   role text NOT NULL CHECK (role IN ('donor','hospital','admin')),
   name text,
   phone text,
+  blood_group text,
   city text,
+  age integer,
   verified boolean DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
@@ -30,7 +40,7 @@ CREATE TABLE IF NOT EXISTS blood_inventory (
   blood_group text NOT NULL,
   units integer NOT NULL CHECK (units >= 0),
   expiry_date timestamptz NOT NULL,
-+  created_at timestamptz DEFAULT now()
+  created_at timestamptz DEFAULT now()
 );
 
 -- Emergency requests
@@ -49,6 +59,7 @@ CREATE TABLE IF NOT EXISTS emergency_requests (
 -- Indexes for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_emergency_city_urgency ON emergency_requests (city, urgency_level DESC, created_at);
 CREATE INDEX IF NOT EXISTS idx_inventory_hospital_blood ON blood_inventory (hospital_id, blood_group);
+
 -- Function to safely fulfill an emergency request
 create or replace function fulfill_emergency_request(
     request_id uuid
