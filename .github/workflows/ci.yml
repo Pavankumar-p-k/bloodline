@@ -18,7 +18,8 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend
-          npm ci
+          - run: npm install
+
       - name: Build
         run: |
           cd frontend
