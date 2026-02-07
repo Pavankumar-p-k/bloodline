@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "complete-bloodline-mvp" ]
+    branches: [ main, complete-bloodline-mvp ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -14,10 +13,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: npm
 
       - name: Install frontend deps
         working-directory: frontend
