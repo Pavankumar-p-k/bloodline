@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { emergency } from '../lib/api'
+import { emergencyApi } from '../lib/api'
 
 export default function useFetchEmergencyRequests(params?: any) {
   const [data, setData] = useState<any[]>([])
@@ -10,9 +10,9 @@ export default function useFetchEmergencyRequests(params?: any) {
   useEffect(() => {
     let mounted = true
     setLoading(true)
-    emergency
+    emergencyApi
       .listNearby(params)
-      .then((res) => {
+      .then((res: any) => {
         if (mounted) setData(res || [])
       })
       .catch((err) => {

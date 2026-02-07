@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext'
 import useFetchEmergencyRequests from '../../../hooks/useFetchEmergencyRequests'
 import EmergencyList from '../../../components/EmergencyList'
 import Button from '../../../components/Button'
-import { emergency } from '../../../lib/api'
+import { emergencyApi } from '../../../lib/api'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useToast } from '../../../components/ToastContext'
 
@@ -15,15 +15,21 @@ export default function DonorDashboard() {
 
   const createRequest = async () => {
     try {
-      await emergency.create({ bloodGroup: 'O+', units: 2, city: 'Sample City', urgency: 'medium' })
-      toast.push({ title: 'Created', description: 'Emergency request created', type: 'success' })
+      await emergencyApi.create({ bloodGroup: 'O+', units: 2, city: 'Sample City', urgency: 'medium' })
+      toast.push({
+        title: 'Created', description: 'Emergency request created', type: 'success',
+        id: ''
+      })
     } catch (e: any) {
-      toast.push({ title: 'Error', description: e?.message || 'Failed to create request', type: 'error' })
+      toast.push({
+        title: 'Error', description: e?.message || 'Failed to create request', type: 'error',
+        id: ''
+      })
     }
   }
 
   return (
-    <ProtectedRoute role={'donor'} children={undefined}>
+    <ProtectedRoute role={'donor'}>
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-2xl font-semibold">Donor dashboard</h1>
       <div className="mt-4 grid gap-6 sm:grid-cols-3">
@@ -36,7 +42,7 @@ export default function DonorDashboard() {
         <aside>
           <div className="p-4 rounded border">
             <div className="font-semibold">Profile</div>
-            <div className="text-sm text-gray-600">{user?.name || user?.email}</div>
+            <div className="text-sm text-gray-600"> : {user?.name || user?.email}</div>
             <div className="mt-4">
               <Button onClick={createRequest}>Request Blood</Button>
             </div>
