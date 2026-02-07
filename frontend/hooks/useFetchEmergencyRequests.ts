@@ -11,7 +11,7 @@ export default function useFetchEmergencyRequests(params?: any) {
     let mounted = true
     setLoading(true)
     emergencyApi
-      .listNearby(params)
+      .list()
       .then((res: any) => {
         if (mounted) setData(res || [])
       })

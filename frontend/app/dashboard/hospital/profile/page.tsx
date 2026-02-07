@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import ProtectedRoute from '../../../../components/ProtectedRoute'
-import { hospital } from '../../../../lib/api'
+import { hospitalApi } from '../../../../lib/api'
 import { useToast } from '../../../../components/ToastContext'
 
 export default function HospitalProfilePage() {
@@ -9,7 +9,10 @@ export default function HospitalProfilePage() {
   const toast = useToast()
 
   useEffect(() => {
-    hospital.getProfile?.().then((res) => setProfile(res)).catch(() => toast.push({ title: 'Error', description: 'Failed to load profile', type: 'error' }))
+    hospitalApi.profile().then((res) => setProfile(res)).catch(() => toast.push({
+      title: 'Error', description: 'Failed to load profile', type: 'error',
+      id: ''
+    }))
   }, [])
 
   if (!profile) return (<ProtectedRoute role={'hospital'}><div className="p-4">Loading...</div></ProtectedRoute>)

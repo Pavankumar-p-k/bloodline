@@ -23,7 +23,7 @@ export default function DonorRegisterPage() {
 
   const onSubmit = async (values: any) => {
     try {
-      await signup({ email: values.email, password: values.password, role: 'donor', name: values.name })
+      await signup(values.email, values.password, 'donor')
       // The profile fields (phone, blood_group, city, age) are sent to backend via separate donor profile endpoint.
       // For now, after signup auto-redirect happens from AuthContext. Optionally call an endpoint to save additional profile data.
       // Example:

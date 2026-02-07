@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
-import { hospital } from '../../../lib/api'
+import { hospitalApi } from '../../../lib/api'
 import EmergencyList from '../../../components/EmergencyList'
 import Button from '../../../components/Button'
 import ProtectedRoute from '../../../components/ProtectedRoute'
@@ -10,21 +10,28 @@ import { useToast } from '../../../components/ToastContext'
 
 export default function HospitalDashboard() {
   const { user } = useAuth()
+  const toast = useToast()
   const [inventory, setInventory] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
 
   useEffect(() => {
-    hospital.inventory.list().then((res) => setInventory(res || [])).catch(() => {})
-    hospital.requests().then((res) => setRequests(res || [])).catch(() => {})
+    hospitalApi.inventory.list().then((res) => setInventory(res.data || [])).catch(() => {})
+    hospitalApi.emergencies().then((res) => setRequests(res.data || [])).catch(() => {})
   }, [])
 
   const fulfill = async (id: string) => {
     try {
-      await hospital.fulfill({ requestId: id })
-      toast.push({ title: 'Fulfilled', description: 'Request fulfilled', type: 'success' })
+      await hospitalApi.fulfill({ requestId: id })
+      toast.push({
+        title: 'Fulfilled', description: 'Request fulfilled', type: 'success',
+        id: ''
+      })
       setRequests((prev) => prev.filter((r) => r.id !== id))
     } catch (e) {
-      toast.push({ title: 'Error', description: 'Failed to fulfill', type: 'error' })
+      toast.push({
+        title: 'Error', description: 'Failed to fulfill', type: 'error',
+        id: ''
+      })
     }
   }
 

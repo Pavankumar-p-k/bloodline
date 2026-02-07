@@ -42,7 +42,11 @@ export default function DonorDashboard() {
         <aside>
           <div className="p-4 rounded border">
             <div className="font-semibold">Profile</div>
-            <div className="text-sm text-gray-600"> : {user?.name || user?.email}</div>
+            <div className="text-sm text-gray-600">
+            {user ? <div className="user">{user.name}</div> : <div>No user</div>}
+            </div>
+
+            <div className="text-sm text-gray-600">Email: {user?.email}</div>
             <div className="mt-4">
               <Button onClick={createRequest}>Request Blood</Button>
             </div>

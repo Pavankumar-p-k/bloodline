@@ -48,4 +48,29 @@ export const emergencyApi = {
   list: () => api.get('/api/emergency')
 }
 
-export default api
+/* ================= HOSPITAL ================= */
+
+export const hospitalApi = {
+  profile: () => api.get('/api/hospital/profile'),
+
+  emergencies: () => api.get('/api/hospital/emergencies'),
+
+  createEmergency: (data: {
+    blood_group: string
+    units_required: number
+    city: string
+    urgency_level: string
+  }) => api.post('/api/emergency', data),
+
+  fulfill: (data: { requestId: string }) =>
+    api.patch('/api/emergency/fulfill', data),
+
+  inventory: {
+    list: () => api.get('/api/hospital/inventory'),
+    create: (data: any) => api.post('/api/hospital/inventory', data),
+    update: (id: string, data: any) =>
+      api.put(`/api/hospital/inventory/${id}`, data),
+    remove: (id: string) =>
+      api.delete(`/api/hospital/inventory/${id}`)
+  }
+}

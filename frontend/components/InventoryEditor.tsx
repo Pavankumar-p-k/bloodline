@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import Input from './Input'
 import Button from './Button'
-import { hospital } from '../lib/api'
+import { hospitalApi } from '../lib/api'
 import { useToast } from './ToastContext'
 
 export default function InventoryEditor({ onSaved }: { onSaved?: (item: any) => void }) {
@@ -14,12 +14,18 @@ export default function InventoryEditor({ onSaved }: { onSaved?: (item: any) => 
 
   const save = async () => {
     try {
-      const res = await hospital.inventory.upsert({ bloodGroup, units, expiry })
-      toast.push({ title: 'Saved', description: 'Inventory updated', type: 'success' })
+      const res = await hospitalApi.inventory.create({ bloodGroup, units, expiry })
+      toast.push({
+        title: 'Saved', description: 'Inventory updated', type: 'success',
+        id: 'inventory-updated'
+      })
       onSaved && onSaved(res)
       setOpen(false)
     } catch (e) {
-      toast.push({ title: 'Error', description: 'Failed to save', type: 'error' })
+      toast.push({
+        title: 'Error', description: 'Failed to save', type: 'error',
+        id: 'inventory-save-error'
+      })
     }
   }
 
