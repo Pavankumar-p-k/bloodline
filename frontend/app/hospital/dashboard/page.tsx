@@ -4,6 +4,7 @@ import ProtectedRoute from "../../../components/ProtectedRoute";
 import { useAuth } from "../../../context/AuthContext";
 import { supabase } from "../../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import LiveLocationSharing from "../../../components/LiveLocationSharing";
 
 type RequestItem = {
   id: string;
@@ -123,6 +124,10 @@ export default function HospitalDashboard() {
             <button onClick={handleLogout} className="px-3 py-1 border rounded">Logout</button>
           </div>
         </header>
+
+        <section className="mb-6">
+          <LiveLocationSharing />
+        </section>
 
         {msg && <div className="mb-3 text-sm text-green-600">{msg}</div>}
 

@@ -49,10 +49,9 @@ app.get('/api/debug', (req, res) => {
 
 // Mount auth routes under /api/auth
 app.use("/api/auth", authRoutes);
-// If you have other route files, mount them here (optional)
-// app.use('/api/donors', require('./routes/donorRoutes'));
-// app.use('/api/hospitals', require('./routes/hospitalRoutes'));
-// app.use('/api/emergency', require('./routes/emergencyRoutes'));
+app.use('/api/donors', require('./routes/donorRoutes'));
+app.use('/api/hospitals', require('./routes/hospitalRoutes'));
+app.use('/api/emergency', require('./routes/emergencyRoutes'));
 
 // Generic error handler
 app.use((err, req, res, next) => {

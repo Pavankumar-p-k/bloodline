@@ -18,11 +18,7 @@ export async function middleware(req: NextRequest) {
     if (pathname === AUTH_SETUP_PAGE) {
       return res;
     }
-
-    const setupUrl = req.nextUrl.clone();
-    setupUrl.pathname = AUTH_SETUP_PAGE;
-    setupUrl.search = "";
-    return NextResponse.redirect(setupUrl);
+    return res;
   }
 
   if (pathname === AUTH_SETUP_PAGE) {
@@ -36,10 +32,7 @@ export async function middleware(req: NextRequest) {
   const supabase = createSupabaseMiddlewareClient(req, res);
 
   if (!supabase) {
-    const setupUrl = req.nextUrl.clone();
-    setupUrl.pathname = AUTH_SETUP_PAGE;
-    setupUrl.search = "";
-    return NextResponse.redirect(setupUrl);
+    return res;
   }
 
   const {

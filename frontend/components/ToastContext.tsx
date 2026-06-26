@@ -3,7 +3,7 @@ import React, { createContext, useContext, useMemo, useState, useCallback } from
 
 type Toast = { id: string; title?: string; description?: string; type?: 'success' | 'error' | 'info' }
 
-const ToastContext = createContext<{
+export const ToastContext = createContext<{
   info(arg0: string): unknown;
   error(arg0: any): unknown;
   success(arg0: string): unknown; push: (t: Toast) => void 

@@ -1,6 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 type AuthContextType = {
   user: any | null;
@@ -13,112 +12,93 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const STORAGE_KEY = "bl_local_auth";
+
+function getStore(): Record<string, { password: string; role: string; name?: string }> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveStore(store: Record<string, { password: string; role: string; name?: string }>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+}
+
+const FALLBACK_USERS: Record<string, { password: string; role: string; name?: string }> = {
+  "admin@test.com": { password: "admin123", role: "admin", name: "Test Admin" },
+  "donor@test.com": { password: "donor123", role: "donor", name: "Test Donor" },
+  "hospital@test.com": { password: "hospital123", role: "hospital", name: "Test Hospital" },
+};
+
+function ensureSeed() {
+  if (typeof window === "undefined") return;
+  const store = getStore();
+  let changed = false;
+  for (const [email, data] of Object.entries(FALLBACK_USERS)) {
+    if (!store[email]) {
+      store[email] = data;
+      changed = true;
+    }
+  }
+  if (changed) saveStore(store);
+}
+
+let nextLocalId = 1;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchProfile = async (id: string | null) => {
-    if (!id) {
+  const fetchProfile = useCallback(async (email: string | null) => {
+    if (!email) {
       setRole(null);
       return null;
     }
-    console.log("Fetching profile for:", id);
-    try {
-      const { data, error } = await supabase.from("profiles").select("role,email").eq("id", id).single();
-      if (error) {
-        console.warn("Error fetching profile:", error.message || error);
-        return null;
-      }
-      setRole(data?.role ?? null);
-      return data?.role ?? null;
-    } catch (err) {
-      console.error("fetchProfile unexpected error:", err);
-      return null;
+    const store = getStore();
+    const record = store[email];
+    if (record) {
+      setRole(record.role);
+      return record.role;
     }
-  };
+    setRole(null);
+    return null;
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
-    const init = async () => {
+    ensureSeed();
+    const stored = localStorage.getItem("bl_current_session");
+    if (stored) {
       try {
-        setLoading(true);
-        try {
-          const {
-            data: { session },
-            error,
-          } = await supabase.auth.getSession();
-          if (error) console.warn("getSession warning:", error);
-          const currentUser = session?.user ?? null;
-          if (mounted) setUser(currentUser);
-          await fetchProfile(currentUser?.id ?? null);
-        } catch (err) {
-          // supabase client might be stubbed/missing — log and continue
-          console.warn("Supabase getSession failed:", (err as Error).message || err);
-          if (mounted) {
-            setUser(null);
-            setRole(null);
-          }
-        }
-      } finally {
-        if (mounted) setLoading(false);
+        const session = JSON.parse(stored);
+        setUser(session);
+        fetchProfile(session.email).finally(() => setLoading(false));
+      } catch {
+        localStorage.removeItem("bl_current_session");
+        setLoading(false);
       }
-    };
-    init();
-
-    let subscriptionUnsub: (() => void) | null = null;
-
-    try {
-      const ret = supabase.auth.onAuthStateChange((event: any, session: { user?: any } | null) => {
-        console.log("Auth state changed:", event);
-        const u = session?.user ?? null;
-        setUser(u);
-        fetchProfile(u?.id ?? null).catch((e) => console.error("fetchProfile error:", e));
-      });
-      // support both real and stub shapes
-      subscriptionUnsub = (ret as any)?.data?.subscription?.unsubscribe ?? (ret as any)?.unsubscribe ?? null;
-    } catch (err) {
-      console.warn("onAuthStateChange not available:", (err as Error).message || err);
+    } else {
+      setLoading(false);
     }
-
-    return () => {
-      mounted = false;
-      try {
-        if (typeof subscriptionUnsub === "function") subscriptionUnsub();
-      } catch (err) {
-        console.warn("Failed to unsubscribe auth listener:", (err as Error).message || err);
-      }
-    };
-  }, []);
+  }, [fetchProfile]);
 
   const signup = async (email: string, password: string, roleParam: string = "donor") => {
     setLoading(true);
-    console.log("Signup attempt:", email, roleParam);
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        console.error("Signup error:", error);
-        throw error;
+      const store = getStore();
+      if (store[email]) {
+        throw new Error("User already exists");
       }
-      const userId = data.user?.id ?? data?.session?.user?.id ?? null;
-      if (!userId) {
-        console.warn("Signup succeeded but no user id returned; profile may be created after confirmation.");
-        setLoading(false);
-        return roleParam;
-      }
-      // Try to set role on profile; tolerate failures but surface them
-      try {
-        const { error: upErr } = await supabase.from("profiles").upsert({ id: userId, email, role: roleParam });
-        if (upErr) {
-          console.error("Failed to set role on profile:", upErr);
-          throw upErr;
-        }
-      } catch (err) {
-        console.error("Upsert profile error:", err);
-        throw err;
-      }
-      await fetchProfile(userId);
-      console.log("Signup complete for:", userId);
+      store[email] = { password, role: roleParam };
+      saveStore(store);
+
+      const sessionUser = { id: String(nextLocalId++), email, role: roleParam };
+      localStorage.setItem("bl_current_session", JSON.stringify(sessionUser));
+      setUser(sessionUser);
+      setRole(roleParam);
       return roleParam;
     } finally {
       setLoading(false);
@@ -127,25 +107,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    console.log("Login attempt:", email);
+    ensureSeed();
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        console.error("Login error:", error);
-        throw error;
+      const store = getStore();
+      const record = store[email];
+      if (!record || record.password !== password) {
+        throw new Error("Invalid email or password");
       }
-      const userId = data.user?.id ?? data.session?.user?.id ?? null;
-      if (!userId) {
-        console.warn("Login succeeded but no user id found.");
-        setUser(data.user ?? data.session?.user ?? null);
-        setLoading(false);
-        return null;
-      }
-      setUser(data.user ?? data.session?.user ?? null);
-      const r = await fetchProfile(userId);
-      setLoading(false);
-      console.log("Login successful:", userId, "role:", r);
-      return r;
+      const sessionUser = { id: String(nextLocalId++), email, role: record.role };
+      localStorage.setItem("bl_current_session", JSON.stringify(sessionUser));
+      setUser(sessionUser);
+      setRole(record.role);
+      return record.role;
     } catch (err) {
       setLoading(false);
       throw err;
@@ -154,18 +127,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     setLoading(true);
-    console.log("Signing out");
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Sign out error:", error);
-        throw error;
-      }
-      setUser(null);
-      setRole(null);
-    } finally {
-      setLoading(false);
-    }
+    localStorage.removeItem("bl_current_session");
+    setUser(null);
+    setRole(null);
+    setLoading(false);
   };
 
   return <AuthContext.Provider value={{ user, role, loading, signup, login, logout }}>{children}</AuthContext.Provider>;

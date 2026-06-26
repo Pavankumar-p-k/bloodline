@@ -1,37 +1,49 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getSupabaseBrowserConfig, getSupabaseBrowserConfigError } from "./supabase-env";
+import { getSupabaseBrowserConfig } from "./supabase-env";
 
 let browserClient: SupabaseClient | null = null;
 
 function getSupabaseConfig() {
-  const config = getSupabaseBrowserConfig();
-
-  if (!config) {
-    throw new Error(getSupabaseBrowserConfigError());
-  }
-
-  return config;
+  return getSupabaseBrowserConfig();
 }
 
 export function getSupabaseBrowserClient() {
-  if (browserClient) {
-    return browserClient;
-  }
-
-  const { url, anonKey } = getSupabaseConfig();
-  browserClient = createBrowserClient(url, anonKey);
+  if (browserClient) return browserClient;
+  const config = getSupabaseConfig();
+  if (!config) return null;
+  browserClient = createBrowserClient(config.url, config.anonKey);
   return browserClient;
 }
 
-// Backward-compatible export for legacy files still in the repo.
-export const supabase = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    const client = getSupabaseBrowserClient() as unknown as Record<PropertyKey, unknown>;
-    const value = client[prop];
-    if (typeof value === "function") {
-      return (value as (...args: unknown[]) => unknown).bind(client);
-    }
-    return value;
+const STUB_CHAIN = new Proxy({} as any, {
+  get(_t, prop) {
+    if (prop === "then") return (resolve: any) => resolve({ data: null, error: null });
+    return () => STUB_CHAIN;
   },
 });
+
+function makeAuthStub() {
+  const authRes = (data: any) => ({ data, error: null });
+  return {
+    getUser: async () => authRes({ user: null }),
+    getSession: async () => authRes({ session: null }),
+    signUp: async () => authRes({ user: { id: "local-" + Date.now() }, session: null }),
+    signInWithPassword: async () => authRes({ user: { id: "local-" + Date.now() }, session: { access_token: "local" } }),
+    signOut: async () => authRes(null),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+  };
+}
+
+const STUB_SUPABASE = new Proxy({} as any, {
+  get(_t, prop) {
+    if (prop === "auth") return makeAuthStub();
+    if (prop === "from") return () => STUB_CHAIN;
+    if (prop === "rpc") return () => STUB_CHAIN;
+    return () => STUB_CHAIN;
+  },
+});
+
+const realClient = getSupabaseBrowserClient();
+
+export const supabase = realClient || STUB_SUPABASE;

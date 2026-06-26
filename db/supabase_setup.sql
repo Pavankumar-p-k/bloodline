@@ -34,3 +34,28 @@ create policy if not exists "Update own profile" on public.profiles
 -- Allow insert when auth.uid() = new.id (covers API inserts). The trigger runs as security definer.
 create policy if not exists "Insert own profile" on public.profiles
   for insert with check ( auth.uid() = new.id );
+
+-- User live locations
+create table if not exists public.user_locations (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  latitude double precision not null,
+  longitude double precision not null,
+  accuracy double precision,
+  updated_at timestamp with time zone default now()
+);
+
+alter table if exists public.user_locations enable row level security;
+
+-- Anyone can see locations (for emergency matching)
+create policy if not exists "Anyone can view locations" on public.user_locations
+  for select using ( true );
+
+-- Users can upsert only their own location
+create policy if not exists "Users can upsert own location" on public.user_locations
+  for insert with check ( auth.uid() = user_id );
+
+create policy if not exists "Users can update own location" on public.user_locations
+  for update using ( auth.uid() = user_id );
+
+create policy if not exists "Users can delete own location" on public.user_locations
+  for delete using ( auth.uid() = user_id );

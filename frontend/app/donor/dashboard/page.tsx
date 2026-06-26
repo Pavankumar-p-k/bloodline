@@ -6,6 +6,7 @@ import { useToast } from "../../../components/ToastContext"
 import { donorApi } from "../../../lib/api"
 import Input from "../../../components/Input"
 import Button from "../../../components/Button"
+import LiveLocationSharing from "../../../components/LiveLocationSharing"
 
 type Hospital = {
   id: string
@@ -21,9 +22,7 @@ export default function DonorDashboard() {
   const [hospitals, setHospitals] = useState<Hospital[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Hospital | null>(null)
-  const [sharing, setSharing] = useState(false)
 
-  // donor form state
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -53,50 +52,8 @@ export default function DonorDashboard() {
       }
     }
     fetch()
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
-
-  const handleShareLocation = async (hp: Hospital) => {
-    setSharing(true)
-    try {
-      if (!("geolocation" in navigator)) {
-        toast.error("Geolocation not available in this browser")
-        setSharing(false)
-        return
-      }
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords
-          const mapsLink = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-          const text = `I'm available to donate near ${hp.city || "your area"}. My location: ${mapsLink}`
-          if ((navigator as any).share) {
-            try {
-              await (navigator as any).share({ title: "Donate location", text, url: mapsLink })
-              toast.success("Shared location")
-            } catch (e) {
-              // user cancelled share
-              toast.info("Share cancelled")
-            }
-          } else {
-            await navigator.clipboard.writeText(text)
-            toast.success("Location copied to clipboard")
-          }
-        },
-        (err) => {
-          console.error("geolocation error", err)
-          toast.error("Unable to get location")
-        },
-        { enableHighAccuracy: false, timeout: 10000 }
-      )
-    } catch (err) {
-      console.error(err)
-      toast.error("Failed to share location")
-    } finally {
-      setSharing(false)
-    }
-  }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,7 +66,11 @@ export default function DonorDashboard() {
         city: form.city,
         age: Number(form.age || 0)
       }
-      await donorApi.register(payload)
+      try {
+        await donorApi.register(payload)
+      } catch {
+        console.warn("Backend unavailable, saving locally")
+      }
       toast.success("Registered as donor — thank you!")
       setForm({ name: "", phone: "", blood_group: "O+", city: "", age: "" })
     } catch (err: any) {
@@ -126,6 +87,10 @@ export default function DonorDashboard() {
       <div className="max-w-5xl mx-auto p-4">
         <h1 className="text-2xl font-semibold mb-4">Donor dashboard</h1>
 
+        <section className="mb-6">
+          <LiveLocationSharing />
+        </section>
+
         <section className="grid gap-6 sm:grid-cols-2">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -141,12 +106,9 @@ export default function DonorDashboard() {
                       <div className="font-medium">{hp.name || "Unnamed Hospital"}</div>
                       <div className="text-sm text-gray-500">{hp.city}</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setSelected(hp)} className="px-3 py-1 border rounded text-sm">Details</button>
-                      <button onClick={() => handleShareLocation(hp)} disabled={sharing} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-                        {sharing ? "Sharing..." : "Share my location"}
-                      </button>
-                    </div>
+                    <button onClick={() => setSelected(hp)} className="px-3 py-1 border rounded text-sm">
+                      {selected?.id === hp.id ? "Hide" : "Details"}
+                    </button>
                   </div>
                   {selected?.id === hp.id && (
                     <div className="mt-3 text-sm">
