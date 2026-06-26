@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 type AuthContextType = {
   user: any | null;
@@ -12,113 +13,125 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "bl_local_auth";
-
-function getStore(): Record<string, { password: string; role: string; name?: string }> {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveStore(store: Record<string, { password: string; role: string; name?: string }>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-}
-
-const FALLBACK_USERS: Record<string, { password: string; role: string; name?: string }> = {
-  "admin@test.com": { password: "admin123", role: "admin", name: "Test Admin" },
-  "donor@test.com": { password: "donor123", role: "donor", name: "Test Donor" },
-  "hospital@test.com": { password: "hospital123", role: "hospital", name: "Test Hospital" },
-};
-
-function ensureSeed() {
-  if (typeof window === "undefined") return;
-  const store = getStore();
-  let changed = false;
-  for (const [email, data] of Object.entries(FALLBACK_USERS)) {
-    if (!store[email]) {
-      store[email] = data;
-      changed = true;
-    }
-  }
-  if (changed) saveStore(store);
-}
-
-let nextLocalId = 1;
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchProfile = useCallback(async (email: string | null) => {
-    if (!email) {
+  // Fetch role from profiles table
+  const fetchProfile = async (userId: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!error && data) {
+        setRole(data.role);
+        return data.role;
+      }
+      setRole(null);
+      return null;
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
       setRole(null);
       return null;
     }
-    const store = getStore();
-    const record = store[email];
-    if (record) {
-      setRole(record.role);
-      return record.role;
-    }
-    setRole(null);
-    return null;
-  }, []);
+  };
 
   useEffect(() => {
-    ensureSeed();
-    const stored = localStorage.getItem("bl_current_session");
-    if (stored) {
+    // Check active session on load
+    const initializeAuth = async () => {
       try {
-        const session = JSON.parse(stored);
-        setUser(session);
-        fetchProfile(session.email).finally(() => setLoading(false));
-      } catch {
-        localStorage.removeItem("bl_current_session");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
+      } catch (err) {
+        console.error("Failed to restore session:", err);
+      } finally {
         setLoading(false);
       }
-    } else {
-      setLoading(false);
-    }
-  }, [fetchProfile]);
+    };
+
+    initializeAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setLoading(true);
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setRole(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const signup = async (email: string, password: string, roleParam: string = "donor") => {
     setLoading(true);
     try {
-      const store = getStore();
-      if (store[email]) {
-        throw new Error("User already exists");
-      }
-      store[email] = { password, role: roleParam };
-      saveStore(store);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role: roleParam,
+            name: email.split("@")[0],
+          },
+        },
+      });
 
-      const sessionUser = { id: String(nextLocalId++), email, role: roleParam };
-      localStorage.setItem("bl_current_session", JSON.stringify(sessionUser));
-      setUser(sessionUser);
-      setRole(roleParam);
-      return roleParam;
-    } finally {
+      if (error) throw error;
+      if (!data.user) throw new Error("Sign up failed");
+
+      setUser(data.user);
+      
+      // Seed profile locally or wait for trigger in production.
+      // In local-dev, POST /signup seeds the profile immediately.
+      // Let's verify we have it:
+      let userRole = roleParam;
+      const fetched = await fetchProfile(data.user.id);
+      if (fetched) userRole = fetched;
+      else {
+        // If trigger is slow, manually insert a profile (or if in mock mode)
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([{ id: data.user.id, email, role: roleParam, name: email.split("@")[0] }]);
+        if (!profileError) setRole(roleParam);
+      }
+
+      return userRole;
+    } catch (err) {
       setLoading(false);
+      throw err;
     }
   };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    ensureSeed();
     try {
-      const store = getStore();
-      const record = store[email];
-      if (!record || record.password !== password) {
-        throw new Error("Invalid email or password");
-      }
-      const sessionUser = { id: String(nextLocalId++), email, role: record.role };
-      localStorage.setItem("bl_current_session", JSON.stringify(sessionUser));
-      setUser(sessionUser);
-      setRole(record.role);
-      return record.role;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      if (!data.user) throw new Error("Invalid credentials");
+
+      setUser(data.user);
+      const userRole = await fetchProfile(data.user.id);
+      return userRole;
     } catch (err) {
       setLoading(false);
       throw err;
@@ -127,13 +140,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     setLoading(true);
-    localStorage.removeItem("bl_current_session");
-    setUser(null);
-    setRole(null);
-    setLoading(false);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setRole(null);
+    } catch (err) {
+      console.error("Sign out error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return <AuthContext.Provider value={{ user, role, loading, signup, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, role, loading, signup, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = (): AuthContextType => {

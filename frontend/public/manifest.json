@@ -1,0 +1,22 @@
+{
+  "name": "Bloodline - India Blood Response Network",
+  "short_name": "Bloodline",
+  "description": "Connect blood donors to patients in real time across India",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0A0A0A",
+  "theme_color": "#C41E3A",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-584515979956-d9f6e5d09982?w=192&h=192&fit=crop",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-584515979956-d9f6e5d09982?w=512&h=512&fit=crop",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

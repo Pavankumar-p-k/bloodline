@@ -1,173 +1,656 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import ProtectedRoute from "../../../components/ProtectedRoute";
 import { useAuth } from "../../../context/AuthContext";
-import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
-
-interface UserProfile {
-  id: string;
-  email: string;
-  role: string;
-  created_at: string;
-}
+import { useToast } from "../../../components/ToastContext";
+import { 
+  Users, Activity, ShieldAlert, Award, 
+  Search, Check, Ban, Trash2, Heart, 
+  MapPin, Eye, FileText, CheckCircle2, 
+  AlertTriangle, Filter, BarChart2 
+} from "lucide-react";
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-  const [donorCount, setDonorCount] = useState<number | null>(null);
-  const [hospitalCount, setHospitalCount] = useState<number | null>(null);
-  const [activeRequests, setActiveRequests] = useState<number | null>(null);
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const { user } = useAuth();
+  const toast = useToast();
+
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // State Lists
+  const [profilesList, setProfilesList] = useState<any[]>([]);
+  const [donorsList, setDonorsList] = useState<any[]>([]);
+  const [requestsList, setRequestsList] = useState<any[]>([]);
+  const [responsesList, setResponsesList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Search & Filter state
+  const [donorSearch, setDonorSearch] = useState("");
+  const [donorFilter, setDonorFilter] = useState("all"); // all, verified, unverified, suspended
+  
+  const [requestSearch, setRequestSearch] = useState("");
+  const [requestFilter, setRequestFilter] = useState("all"); // all, pending, active, fulfilled, fake
+
+  // Verification review modal
+  const [reviewRequest, setReviewRequest] = useState<any | null>(null);
+
+  const fetchAdminData = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch profiles
+      const { data: profiles, error: pErr } = await supabase.from("profiles").select("*");
+      if (pErr) throw pErr;
+      setProfilesList(profiles || []);
+
+      // 2. Fetch donors
+      const { data: donors, error: dErr } = await supabase.from("donors").select("*");
+      if (dErr) throw dErr;
+      setDonorsList(donors || []);
+
+      // 3. Fetch requests
+      const { data: requests, error: rErr } = await supabase.from("blood_requests").select("*");
+      if (rErr) throw rErr;
+      setRequestsList(requests || []);
+
+      // 4. Fetch responses
+      const { data: responses, error: respErr } = await supabase.from("donor_responses").select("*");
+      if (respErr) throw respErr;
+      setResponsesList(responses || []);
+
+    } catch (e: any) {
+      console.error(e);
+      toast.push({ title: "Fetch Error", description: e.message || "Failed to load admin logs", type: "error", id: "admin-fetch-err" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let mounted = true;
-
-    const fetchStats = async () => {
-      try {
-        const [donorsRes, hospitalsRes, requestsRes, usersRes] = await Promise.all([
-          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "donor"),
-          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "hospital"),
-          supabase.from("emergency_requests").select("id", { count: "exact", head: true }).neq("status", "fulfilled"),
-          supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(50),
-        ]);
-
-        if (!mounted) return;
-
-        setDonorCount(donorsRes.count ?? 0);
-        setHospitalCount(hospitalsRes.count ?? 0);
-        setActiveRequests(requestsRes.count ?? 0);
-        setUsers((usersRes.data as UserProfile[]) ?? []);
-      } catch (err) {
-        console.error("Failed to fetch admin stats:", err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    fetchStats();
-    return () => { mounted = false; };
+    fetchAdminData();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push("/");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  // Update donor verification/suspension status
+  const handleUpdateDonor = async (donorId: string, updates: any) => {
     try {
       const { error } = await supabase
-        .from("profiles")
-        .update({ role: newRole })
-        .eq("id", userId);
+        .from("donors")
+        .update(updates)
+        .eq("id", donorId);
 
-      if (error) {
-        console.error("Role update error:", error);
-        return;
+      if (error) throw error;
+
+      // In profiles, also suspend if needed
+      if (updates.is_suspended !== undefined) {
+        await supabase.from("profiles").update({ is_suspended: updates.is_suspended }).eq("id", donorId);
       }
 
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-      );
-    } catch (err) {
-      console.error("Role change failed:", err);
+      toast.push({ title: "Donor Updated", description: "Status changed successfully", type: "success", id: "donor-up-ok" });
+      fetchAdminData();
+    } catch (err: any) {
+      toast.push({ title: "Update Failed", description: err.message, type: "error", id: "donor-up-err" });
     }
   };
 
+  // Delete Donor
+  const handleDeleteDonor = async (donorId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this donor?")) return;
+    try {
+      const { error } = await supabase.from("donors").delete().eq("id", donorId);
+      if (error) throw error;
+      await supabase.from("profiles").delete().eq("id", donorId);
+      
+      toast.push({ title: "Donor Deleted", description: "Profile removed from database", type: "success", id: "donor-del-ok" });
+      fetchAdminData();
+    } catch (err: any) {
+      toast.push({ title: "Deletion Failed", description: err.message, type: "error", id: "donor-del-err" });
+    }
+  };
+
+  // Update request status
+  const handleUpdateRequest = async (requestId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("blood_requests")
+        .update({ status })
+        .eq("id", requestId);
+
+      if (error) throw error;
+      toast.push({ title: "Request Updated", description: `Status changed to ${status}`, type: "success", id: "req-up-ok" });
+      fetchAdminData();
+    } catch (err: any) {
+      toast.push({ title: "Update Failed", description: err.message, type: "error", id: "req-up-err" });
+    }
+  };
+
+  // Approve Document
+  const handleApproveDocument = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from("blood_requests")
+        .update({ is_verified: true, status: "active" })
+        .eq("id", requestId);
+
+      if (error) throw error;
+      toast.push({ title: "Request Verified", description: "Verification complete. Alerts dispatched.", type: "success", id: "doc-app-ok" });
+      setReviewRequest(null);
+      fetchAdminData();
+    } catch (err: any) {
+      toast.push({ title: "Verification Failed", description: err.message, type: "error", id: "doc-app-err" });
+    }
+  };
+
+  // Reject Document
+  const handleRejectDocument = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from("blood_requests")
+        .update({ is_verified: false, status: "closed" })
+        .eq("id", requestId);
+
+      if (error) throw error;
+      toast.push({ title: "Document Rejected", description: "Request has been marked unverified and closed.", type: "success", id: "doc-rej-ok" });
+      setReviewRequest(null);
+      fetchAdminData();
+    } catch (err: any) {
+      toast.push({ title: "Action Failed", description: err.message, type: "error", id: "doc-rej-err" });
+    }
+  };
+
+  // Filters Evaluation
+  const filteredDonors = donorsList.filter(d => {
+    const matchesSearch = d.full_name.toLowerCase().includes(donorSearch.toLowerCase()) || 
+                          d.phone.includes(donorSearch) || 
+                          d.blood_group.toLowerCase().includes(donorSearch.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    if (donorFilter === "verified" && !d.is_verified) return false;
+    if (donorFilter === "unverified" && d.is_verified) return false;
+    if (donorFilter === "suspended" && !d.is_suspended) return false;
+
+    return true;
+  });
+
+  const filteredRequests = requestsList.filter(r => {
+    const matchesSearch = r.hospital_name.toLowerCase().includes(requestSearch.toLowerCase()) || 
+                          r.contact_name.toLowerCase().includes(requestSearch.toLowerCase()) ||
+                          r.blood_group_needed.toLowerCase().includes(requestSearch.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    if (requestFilter !== "all" && r.status !== requestFilter) return false;
+
+    return true;
+  });
+
+  // Calculate analytical metrics
+  const totalFulfilled = requestsList.filter(r => r.status === "fulfilled").length;
+  const fulfillmentRate = requestsList.length > 0 ? Math.round((totalFulfilled / requestsList.length) * 100) : 0;
+  
+  // Pending verification queue
+  const pendingVerifications = requestsList.filter(r => r.requester_type === "Hospital" && !r.is_verified && r.verification_doc_url);
+
+  // Severe Alert Panel Checks
+  const criticalUnanswered = requestsList.filter(r => r.urgency_level === "CRITICAL" && r.status === "pending");
+
   return (
-    <ProtectedRoute role={"admin"}>
-      <div className="max-w-5xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">Admin Panel</h1>
-            <p className="text-sm text-gray-600">
-              {user?.email ?? "Administrator"}
-            </p>
-          </div>
-          <div>
-            <button onClick={handleLogout} className="px-3 py-1 border rounded">
-              Logout
-            </button>
-          </div>
-        </header>
+    <ProtectedRoute role="admin">
+      <main className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] pb-16 px-4">
+        <div className="max-w-6xl mx-auto space-y-8 pt-8">
+          
+          {/* HEADER BAR */}
+          <header className="flex justify-between items-center bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 shadow-xl">
+            <div>
+              <span className="text-xs font-semibold text-[#9090A0] uppercase tracking-widest block">Command Center</span>
+              <h1 className="text-2xl font-black text-white mt-1">Super Admin Dashboard</h1>
+            </div>
+            <span className="px-3.5 py-1.5 bg-red-950/40 border border-red-500/30 text-[#C41E3A] text-xs font-black rounded-lg">
+              SYSTEM ONLINE
+            </span>
+          </header>
 
-        {loading ? (
-          <div className="text-sm text-gray-500">Loading stats...</div>
-        ) : (
-          <>
-            <section className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 border rounded bg-white">
-                <div className="text-sm text-gray-500">Donors</div>
-                <div className="text-2xl font-bold">{donorCount ?? "—"}</div>
-              </div>
-              <div className="p-4 border rounded bg-white">
-                <div className="text-sm text-gray-500">Hospitals</div>
-                <div className="text-2xl font-bold">{hospitalCount ?? "—"}</div>
-              </div>
-              <div className="p-4 border rounded bg-white">
-                <div className="text-sm text-gray-500">Active Requests</div>
-                <div className="text-2xl font-bold">{activeRequests ?? "—"}</div>
-              </div>
-            </section>
+          {/* TAB TRIGGERS */}
+          <div className="flex border-b border-zinc-800 gap-6 text-sm font-semibold">
+            {["overview", "donors", "requests", "verifications"].map(t => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`pb-3 capitalize transition-all relative ${
+                  activeTab === t ? "text-[#C41E3A] border-b-2 border-[#C41E3A]" : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
 
-            <section>
-              <h3 className="text-lg font-semibold mb-2">User Management</h3>
-              <div className="p-3 border rounded bg-white overflow-x-auto">
-                {users.length === 0 ? (
-                  <div className="text-sm text-gray-500">No users found.</div>
-                ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="text-gray-500 border-b">
-                        <th className="pb-2 pr-4">Email</th>
-                        <th className="pb-2 pr-4">Role</th>
-                        <th className="pb-2 pr-4">Joined</th>
-                        <th className="pb-2">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.map((u) => (
-                        <tr key={u.id} className="border-b last:border-0">
-                          <td className="py-2 pr-4">{u.email}</td>
-                          <td className="py-2 pr-4">
-                            <select
-                              value={u.role}
-                              onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                              className="border rounded px-2 py-1 text-xs"
-                            >
-                              <option value="donor">Donor</option>
-                              <option value="hospital">Hospital</option>
-                              <option value="admin">Admin</option>
-                            </select>
-                          </td>
-                          <td className="py-2 pr-4 text-gray-500">
-                            {u.created_at
-                              ? new Date(u.created_at).toLocaleDateString()
-                              : "—"}
-                          </td>
-                          <td className="py-2">
-                            <button
-                              onClick={() => handleRoleChange(u.id, u.role)}
-                              className="px-2 py-1 border rounded text-xs"
-                            >
-                              Update
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+          {loading ? (
+            <div className="text-center py-20 text-sm text-zinc-500">Retrieving operational parameters...</div>
+          ) : (
+            <>
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === "overview" && (
+                <div className="space-y-8">
+                  {/* Top Stats bar */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-[#1A1A1A] p-5 border border-zinc-800 rounded-xl">
+                      <span className="text-xs text-[#9090A0] uppercase tracking-wider block font-bold">Total Donors</span>
+                      <span className="text-3xl font-black text-white mt-1 block">{donorsList.length}</span>
+                    </div>
+
+                    <div className="bg-[#1A1A1A] p-5 border border-zinc-800 rounded-xl">
+                      <span className="text-xs text-[#9090A0] uppercase tracking-wider block font-bold">Active Broadcasts</span>
+                      <span className="text-3xl font-black text-[#C41E3A] mt-1 block">
+                        {requestsList.filter(r => r.status === "pending" || r.status === "active").length}
+                      </span>
+                    </div>
+
+                    <div className="bg-[#1A1A1A] p-5 border border-zinc-800 rounded-xl">
+                      <span className="text-xs text-[#9090A0] uppercase tracking-wider block font-bold">Fulfillment Rate</span>
+                      <span className="text-3xl font-black text-emerald-400 mt-1 block">{fulfillmentRate}%</span>
+                    </div>
+
+                    <div className="bg-[#1A1A1A] p-5 border border-zinc-800 rounded-xl">
+                      <span className="text-xs text-[#9090A0] uppercase tracking-wider block font-bold">Pending Reviews</span>
+                      <span className="text-3xl font-black text-amber-500 mt-1 block">{pendingVerifications.length}</span>
+                    </div>
+                  </div>
+
+                  {/* Alerts and Shortages */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* Urgency Alert Logs */}
+                    <div className="lg:col-span-2 bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 space-y-4">
+                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        <h3 className="font-bold text-sm uppercase tracking-wider text-white">System Security Alerts</h3>
+                      </div>
+
+                      <div className="space-y-3">
+                        {criticalUnanswered.length === 0 ? (
+                          <div className="text-xs text-zinc-500 py-6 text-center">No critical warnings logged. System operations normal.</div>
+                        ) : (
+                          criticalUnanswered.map(c => (
+                            <div key={c.id} className="bg-red-950/20 border border-red-500/20 p-4 rounded-xl flex items-center justify-between text-xs">
+                              <div className="space-y-1">
+                                <span className="px-2 py-0.5 bg-red-950 border border-red-500/30 text-[#C41E3A] font-black rounded text-[9px] uppercase tracking-widest">CRITICAL UNANSWERED</span>
+                                <p className="font-bold text-white mt-1">{c.hospital_name} needs {c.blood_group_needed} ({c.units_needed} units)</p>
+                                <span className="text-[#9090A0] text-[10px]">Submitted: {new Date(c.created_at).toLocaleTimeString("en-IN")}</span>
+                              </div>
+                              <button
+                                onClick={() => setActiveTab("requests")}
+                                className="px-3 py-1.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white font-bold rounded-lg"
+                              >
+                                Dispatch Match
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Blood Shortage alerts */}
+                    <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 space-y-4">
+                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
+                        <BarChart2 className="h-5 w-5 text-[#C41E3A]" />
+                        <h3 className="font-bold text-sm uppercase tracking-wider text-white">Blood Availability</h3>
+                      </div>
+
+                      <div className="space-y-3.5 text-xs">
+                        {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => {
+                          const count = donorsList.filter(d => d.blood_group === bg && d.is_available).length;
+                          const isLow = count === 0;
+                          return (
+                            <div key={bg} className="flex justify-between items-center bg-[#0F0F0F] p-2.5 rounded-lg border border-zinc-850">
+                              <span className="font-bold text-white">{bg} Group</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 font-bold rounded text-[9px] ${
+                                  isLow ? "bg-red-950 text-red-400 border border-red-500/20" : "bg-emerald-950 text-emerald-400 border border-emerald-500/20"
+                                }`}>
+                                  {isLow ? "CRITICAL SHORTAGE" : `${count} Available`}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: DONORS MANAGEMENT */}
+              {activeTab === "donors" && (
+                <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 space-y-4 shadow-xl">
+                  {/* Search filters */}
+                  <div className="flex flex-wrap gap-4 items-center justify-between">
+                    <div className="flex items-center gap-2 bg-[#0F0F0F] border border-zinc-800 px-3 py-2.5 rounded-xl flex-1 max-w-sm">
+                      <Search className="h-4 w-4 text-zinc-500" />
+                      <input 
+                        type="text" 
+                        placeholder="Search donor by name, phone, blood group..."
+                        value={donorSearch}
+                        onChange={(e) => setDonorSearch(e.target.value)}
+                        className="bg-transparent border-none outline-none text-xs text-white placeholder-zinc-500 w-full"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs">
+                      <Filter className="h-4 w-4 text-zinc-500" />
+                      <select
+                        value={donorFilter}
+                        onChange={(e) => setDonorFilter(e.target.value)}
+                        className="bg-[#0F0F0F] border border-zinc-800 rounded-lg text-[#F5F5F5] py-2 px-3 focus:outline-none"
+                      >
+                        <option value="all">All Donors</option>
+                        <option value="verified">Verified Only</option>
+                        <option value="unverified">Pending Verification</option>
+                        <option value="suspended">Suspended Only</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Donors list table */}
+                  <div className="overflow-x-auto">
+                    {filteredDonors.length === 0 ? (
+                      <div className="text-center py-10 text-xs text-[#9090A0]">No matching donor logs found.</div>
+                    ) : (
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-zinc-800 text-zinc-500 font-bold">
+                            <th className="pb-3 pr-4 uppercase">Name</th>
+                            <th className="pb-3 pr-4 uppercase">Blood</th>
+                            <th className="pb-3 pr-4 uppercase">Location</th>
+                            <th className="pb-3 pr-4 uppercase">Contact</th>
+                            <th className="pb-3 pr-4 uppercase">Status</th>
+                            <th className="pb-3 uppercase text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredDonors.map(d => (
+                            <tr key={d.id} className="border-b border-zinc-800 last:border-0 hover:bg-[#0F0F0F] transition-all">
+                              <td className="py-3.5 pr-4 font-bold text-white">{d.full_name}</td>
+                              <td className="py-3.5 pr-4">
+                                <span className="px-2 py-0.5 bg-red-950 text-[#C41E3A] border border-[#C41E3A]/30 font-black rounded">
+                                  {d.blood_group}
+                                </span>
+                              </td>
+                              <td className="py-3.5 pr-4 text-zinc-300">{d.city}, {d.area}</td>
+                              <td className="py-3.5 pr-4 font-mono">{d.phone}</td>
+                              <td className="py-3.5 pr-4">
+                                <span className={`px-2 py-0.5 text-[10px] font-black rounded ${
+                                  d.is_suspended 
+                                    ? "bg-red-950/60 text-red-400 border border-red-500/20" 
+                                    : d.is_verified 
+                                      ? "bg-emerald-950/60 text-emerald-400 border border-emerald-500/20" 
+                                      : "bg-zinc-800 text-zinc-400"
+                                }`}>
+                                  {d.is_suspended ? "SUSPENDED" : d.is_verified ? "VERIFIED" : "UNVERIFIED"}
+                                </span>
+                              </td>
+                              <td className="py-3.5 text-right space-x-2">
+                                {!d.is_verified && (
+                                  <button
+                                    onClick={() => handleUpdateDonor(d.id, { is_verified: true })}
+                                    className="p-1.5 bg-emerald-950/50 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-400 hover:text-white rounded-lg transition-all"
+                                    title="Verify Donor"
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleUpdateDonor(d.id, { is_suspended: !d.is_suspended })}
+                                  className={`p-1.5 border rounded-lg transition-all ${
+                                    d.is_suspended 
+                                      ? 'bg-amber-950/50 border-amber-500/40 text-amber-500 hover:bg-amber-600 hover:text-white' 
+                                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800'
+                                  }`}
+                                  title={d.is_suspended ? "Reactivate Donor" : "Suspend Donor"}
+                                >
+                                  <Ban className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteDonor(d.id)}
+                                  className="p-1.5 bg-red-950/50 hover:bg-[#C41E3A] border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
+                                  title="Delete Profile"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: REQUEST MANAGEMENT */}
+              {activeTab === "requests" && (
+                <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 space-y-4 shadow-xl">
+                  {/* Search filters */}
+                  <div className="flex flex-wrap gap-4 items-center justify-between">
+                    <div className="flex items-center gap-2 bg-[#0F0F0F] border border-zinc-800 px-3 py-2.5 rounded-xl flex-1 max-w-sm">
+                      <Search className="h-4 w-4 text-zinc-500" />
+                      <input 
+                        type="text" 
+                        placeholder="Search requests by hospital, blood type..."
+                        value={requestSearch}
+                        onChange={(e) => setRequestSearch(e.target.value)}
+                        className="bg-transparent border-none outline-none text-xs text-white placeholder-zinc-500 w-full"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs">
+                      <Filter className="h-4 w-4 text-zinc-500" />
+                      <select
+                        value={requestFilter}
+                        onChange={(e) => setRequestFilter(e.target.value)}
+                        className="bg-[#0F0F0F] border border-zinc-800 rounded-lg text-[#F5F5F5] py-2 px-3 focus:outline-none"
+                      >
+                        <option value="all">All Request Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="fulfilled">Fulfilled</option>
+                        <option value="closed">Closed</option>
+                        <option value="fake">Fake / Suspicious</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Requests Table */}
+                  <div className="overflow-x-auto">
+                    {filteredRequests.length === 0 ? (
+                      <div className="text-center py-10 text-xs text-[#9090A0]">No matching emergency broadcasts recorded.</div>
+                    ) : (
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-zinc-800 text-zinc-500 font-bold">
+                            <th className="pb-3 pr-4 uppercase">Hospital</th>
+                            <th className="pb-3 pr-4 uppercase">Patient</th>
+                            <th className="pb-3 pr-4 uppercase">Type Needed</th>
+                            <th className="pb-3 pr-4 uppercase">Urgency</th>
+                            <th className="pb-3 pr-4 uppercase">Responses</th>
+                            <th className="pb-3 pr-4 uppercase">Status</th>
+                            <th className="pb-3 uppercase text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredRequests.map(r => {
+                            const resCount = responsesList.filter(res => res.request_id === r.id).length;
+                            return (
+                              <tr key={r.id} className="border-b border-zinc-800 last:border-0 hover:bg-[#0F0F0F] transition-all">
+                                <td className="py-3.5 pr-4">
+                                  <div className="font-bold text-white">{r.hospital_name}</div>
+                                  <div className="text-[10px] text-zinc-500 truncate max-w-[150px]">{r.address}</div>
+                                </td>
+                                <td className="py-3.5 pr-4 text-zinc-300">{r.patient_name || "Anonymized"}</td>
+                                <td className="py-3.5 pr-4 font-extrabold text-[#C41E3A]">
+                                  {r.blood_group_needed} ({r.units_needed} bags)
+                                </td>
+                                <td className="py-3.5 pr-4">
+                                  <span className={`px-2 py-0.5 text-[9px] font-black rounded ${
+                                    r.urgency_level === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-500/20" : "bg-amber-950 text-amber-400 border border-amber-500/20"
+                                  }`}>{r.urgency_level}</span>
+                                </td>
+                                <td className="py-3.5 pr-4 text-[#9090A0]">{resCount} Donors</td>
+                                <td className="py-3.5 pr-4 capitalize">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    r.status === "fulfilled" ? "bg-emerald-950 text-emerald-400" : r.status === "fake" ? "bg-red-950 text-red-500" : "bg-zinc-850 text-zinc-300"
+                                  }`}>{r.status}</span>
+                                </td>
+                                <td className="py-3.5 text-right space-x-2">
+                                  {r.status !== "fulfilled" && (
+                                    <button
+                                      onClick={() => handleUpdateRequest(r.id, "fulfilled")}
+                                      className="px-2.5 py-1.5 bg-emerald-950/60 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-400 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                    >
+                                      Fulfill
+                                    </button>
+                                  )}
+                                  {r.status !== "fake" && (
+                                    <button
+                                      onClick={() => handleUpdateRequest(r.id, "fake")}
+                                      className="px-2.5 py-1.5 bg-red-950/50 hover:bg-[#C41E3A] border border-red-500/30 text-red-400 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                      title="Mark Fraudulent"
+                                    >
+                                      Flag Fake
+                                    </button>
+                                  )}
+                                  {r.status !== "closed" && (
+                                    <button
+                                      onClick={() => handleUpdateRequest(r.id, "closed")}
+                                      className="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                    >
+                                      Close
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: VERIFICATION QUEUE */}
+              {activeTab === "verifications" && (
+                <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 space-y-4 shadow-xl">
+                  <div className="border-b border-zinc-800 pb-3 mb-4">
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-[#9090A0]">Pending Document Review</h3>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    {pendingVerifications.length === 0 ? (
+                      <div className="text-center py-10 text-xs text-[#9090A0]">All pending documents reviewed. Queue empty!</div>
+                    ) : (
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-zinc-800 text-zinc-500 font-bold">
+                            <th className="pb-3 pr-4 uppercase">Hospital</th>
+                            <th className="pb-3 pr-4 uppercase">Contact Name</th>
+                            <th className="pb-3 pr-4 uppercase">Requested Details</th>
+                            <th className="pb-3 pr-4 uppercase">Uploaded File</th>
+                            <th className="pb-3 uppercase text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pendingVerifications.map(v => (
+                            <tr key={v.id} className="border-b border-zinc-800 last:border-0 hover:bg-[#0F0F0F] transition-all">
+                              <td className="py-3.5 pr-4 font-bold text-white">{v.hospital_name}</td>
+                              <td className="py-3.5 pr-4 text-zinc-300">{v.contact_name}</td>
+                              <td className="py-3.5 pr-4">
+                                <span className="font-extrabold text-[#C41E3A]">{v.blood_group_needed} Needed</span> ({v.units_needed} bags)
+                              </td>
+                              <td className="py-3.5 pr-4">
+                                <button
+                                  onClick={() => setReviewRequest(v)}
+                                  className="text-zinc-400 hover:text-white flex items-center gap-1 hover:underline text-[10px]"
+                                >
+                                  <FileText className="h-4 w-4 text-[#C41E3A]" /> View letterhead.png
+                                </button>
+                              </td>
+                              <td className="py-3.5 text-right space-x-2">
+                                <button
+                                  onClick={() => handleApproveDocument(v.id)}
+                                  className="px-3 py-1.5 bg-emerald-950/60 hover:bg-emerald-600 border border-emerald-500/40 text-emerald-400 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleRejectDocument(v.id)}
+                                  className="px-3 py-1.5 bg-red-950/50 hover:bg-[#C41E3A] border border-red-500/30 text-red-400 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                >
+                                  Reject
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* VERIFICATION DIALOG MODAL */}
+          {reviewRequest && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 animate-fade-in">
+              <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl relative">
+                
+                <button
+                  onClick={() => setReviewRequest(null)}
+                  className="absolute top-4 right-4 text-zinc-500 hover:text-white"
+                >
+                  <Eye className="h-5 w-5" />
+                </button>
+
+                <h3 className="text-base font-bold text-white border-b border-zinc-800 pb-2">Hospital Verification Document</h3>
+
+                <div className="space-y-1.5 text-xs">
+                  <p><strong>Hospital Coordinator:</strong> {reviewRequest.contact_name} ({reviewRequest.contact_phone})</p>
+                  <p><strong>Emergency:</strong> {reviewRequest.blood_group_needed} ({reviewRequest.units_needed} units required)</p>
+                </div>
+
+                {/* Display File Image Preview */}
+                <div className="w-full h-64 rounded-xl border border-zinc-800 overflow-hidden relative bg-black flex items-center justify-center">
+                  <img 
+                    src={reviewRequest.verification_doc_url} 
+                    alt="Letterhead slip" 
+                    className="max-h-full object-contain"
+                  />
+                </div>
+
+                {/* Approve/Reject Buttons */}
+                <div className="flex gap-3 justify-end pt-3 border-t border-zinc-800">
+                  <button
+                    onClick={() => handleRejectDocument(reviewRequest.id)}
+                    className="px-4 py-2.5 bg-red-950/50 border border-red-500/30 text-red-400 hover:bg-[#C41E3A] hover:text-white rounded-lg text-xs font-bold transition-all"
+                  >
+                    Reject Verification
+                  </button>
+                  <button
+                    onClick={() => handleApproveDocument(reviewRequest.id)}
+                    className="px-4 py-2.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-xs font-bold transition-all"
+                  >
+                    Approve & Verify
+                  </button>
+                </div>
+
               </div>
-            </section>
-          </>
-        )}
-      </div>
+            </div>
+          )}
+
+        </div>
+      </main>
     </ProtectedRoute>
   );
 }

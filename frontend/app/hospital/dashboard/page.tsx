@@ -1,103 +1,120 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import ProtectedRoute from "../../../components/ProtectedRoute";
 import { useAuth } from "../../../context/AuthContext";
 import { supabase } from "../../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import LiveLocationSharing from "../../../components/LiveLocationSharing";
+import { useToast } from "../../../components/ToastContext";
+import { 
+  Plus, LogOut, Loader2, Heart, MapPin, 
+  Phone, Calendar, AlertTriangle, ShieldCheck, 
+  ArrowRight, CheckCircle2 
+} from "lucide-react";
 
-type RequestItem = {
-  id: string;
-  blood_group?: string;
-  units?: number;
-  city?: string;
-  urgency?: string;
-  status?: string;
-  created_at?: string;
-};
-
-type ResponseItem = {
-  id: string;
-  donor_id?: string;
-  request_id?: string;
-  status?: string;
-  created_at?: string;
-};
+// Haversine distance calculator
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function HospitalDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [requests, setRequests] = useState<RequestItem[]>([]);
-  const [responsesMap, setResponsesMap] = useState<Record<string, ResponseItem[]>>({});
+  const toast = useToast();
+
+  const [requests, setRequests] = useState<any[]>([]);
+  const [responsesMap, setResponsesMap] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const [msg, setMsg] = useState<string | null>(null);
 
-  const mockRequests: RequestItem[] = [
-    { id: "r1", blood_group: "O+", units: 2, city: "Hyderabad", urgency: "Critical", status: "active" },
-  ];
-
-  const fetchRequests = async () => {
+  const fetchHospitalData = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      console.log("HospitalDashboard: fetching requests for hospital user:", user?.id);
-      // try to fetch requests created by this hospital user
-      const { data, error } = await supabase.from("requests").select("*").eq("created_by", user?.id).order("created_at", { ascending: false });
-      if (error) {
-        console.warn("fetch hospital requests error:", error);
-        setRequests(mockRequests);
-      } else {
-        setRequests(data ?? []);
-      }
+      // 1. Fetch requests created by this hospital coordinator
+      const { data: reqs, error: reqErr } = await supabase
+        .from("blood_requests")
+        .select("*")
+        .eq("requester_id", user.id)
+        .order("created_at", { ascending: false });
 
-      // fetch responses for each request
-      const map: Record<string, ResponseItem[]> = {};
-      for (const req of (data ?? mockRequests)) {
-        try {
-          const { data: respData, error: respErr } = await supabase.from("responses").select("*").eq("request_id", req.id).order("created_at", { ascending: false });
-          if (respErr) {
-            console.warn("fetch responses error for", req.id, respErr);
-            map[req.id] = [];
+      if (reqErr) throw reqErr;
+      setRequests(reqs || []);
+
+      // 2. Fetch responses for each request
+      if (reqs && reqs.length > 0) {
+        const map: Record<string, any[]> = {};
+        for (const req of reqs) {
+          const { data: respData, error: respErr } = await supabase
+            .from("donor_responses")
+            .select(`
+              id,
+              status,
+              responded_at,
+              donated_at,
+              donor_id,
+              donors (
+                full_name,
+                blood_group,
+                phone,
+                lat,
+                lng
+              )
+            `)
+            .eq("request_id", req.id);
+
+          if (!respErr && respData) {
+            map[req.id] = respData;
           } else {
-            map[req.id] = respData ?? [];
+            map[req.id] = [];
           }
-        } catch (err) {
-          console.error("unexpected responses fetch error:", err);
-          map[req.id] = [];
         }
+        setResponsesMap(map);
       }
-      setResponsesMap(map);
-    } catch (err) {
-      console.error("Unexpected fetchRequests error:", err);
-      setRequests(mockRequests);
+    } catch (err: any) {
+      console.error(err);
+      toast.push({ title: "Fetch Error", description: err.message || "Failed to load requests", type: "error", id: "hosp-fetch-err" });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchHospitalData();
+
+    // Subscribe to realtime updates for requests/responses
+    const hospChannel = supabase
+      .channel("hospital-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "blood_requests" }, () => fetchHospitalData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "donor_responses" }, () => fetchHospitalData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(hospChannel);
+    };
   }, [user?.id]);
 
-  const approveResponse = async (responseId: string, requestId: string) => {
-    setMsg(null);
+  const handleFulfillRequest = async (requestId: string) => {
     try {
-      console.log("Approving response:", responseId);
-      const { error } = await supabase.from("responses").update({ status: "approved" }).eq("id", responseId);
-      if (error) {
-        console.error("approve error:", error);
-        setMsg(error.message || "Failed to approve response.");
-        return;
-      }
-      // update local map
-      setResponsesMap((m) => {
-        const arr = (m[requestId] ?? []).map((r) => (r.id === responseId ? { ...r, status: "approved" } : r));
-        return { ...m, [requestId]: arr };
-      });
-      setMsg("Response approved.");
-    } catch (err) {
-      console.error("Unexpected approve error:", err);
-      setMsg("Unexpected error. See console.");
+      const { error } = await supabase
+        .from("blood_requests")
+        .update({ status: "fulfilled" })
+        .eq("id", requestId);
+
+      if (error) throw error;
+      toast.push({ title: "Success", description: "Request marked as Fulfilled. Thank you!", type: "success", id: "hosp-full-ok" });
+      fetchHospitalData();
+    } catch (e: any) {
+      toast.push({ title: "Action Failed", description: e.message, type: "error", id: "hosp-full-err" });
     }
   };
 
@@ -107,76 +124,192 @@ export default function HospitalDashboard() {
       router.push("/");
     } catch (err) {
       console.error("Logout failed:", err);
-      setMsg("Logout failed. See console.");
     }
   };
 
   return (
-    <ProtectedRoute role={"hospital"}>
-      <div className="max-w-4xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">Hospital Dashboard</h1>
-            <p className="text-sm text-gray-600">{user?.email ?? "Hospital account"}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="px-3 py-1 border rounded">Create Emergency Request</button>
-            <button onClick={handleLogout} className="px-3 py-1 border rounded">Logout</button>
-          </div>
-        </header>
-
-        <section className="mb-6">
-          <LiveLocationSharing />
-        </section>
-
-        {msg && <div className="mb-3 text-sm text-green-600">{msg}</div>}
-
-        <section className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Active Requests</h3>
-          {loading ? (
-            <div>Loading requests...</div>
-          ) : (
-            <div className="space-y-4">
-              {requests.map((req) => (
-                <div key={req.id} className="p-3 border rounded">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{req.blood_group} — {req.units} unit(s)</div>
-                      <div className="text-sm text-gray-500">{req.urgency} — {req.city}</div>
-                    </div>
-                    <div className="text-sm text-gray-500">{req.status}</div>
-                  </div>
-
-                  <div className="mt-3">
-                    <h4 className="font-medium">Donor Responses</h4>
-                    <div className="mt-2 space-y-2">
-                      {(responsesMap[req.id] ?? []).length === 0 && <div className="text-sm text-gray-500">No responses yet.</div>}
-                      {(responsesMap[req.id] ?? []).map((res) => (
-                        <div key={res.id} className="flex items-center justify-between border p-2 rounded">
-                          <div>
-                            <div className="text-sm">Donor: {res.donor_id ?? "Unknown"}</div>
-                            <div className="text-xs text-gray-500">Status: {res.status}</div>
-                          </div>
-                          <div>
-                            <button
-                              onClick={() => approveResponse(res.id!, req.id!)}
-                              className="px-2 py-1 bg-green-600 text-white rounded"
-                              disabled={res.status === "approved"}
-                            >
-                              {res.status === "approved" ? "Approved" : "Approve"}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {requests.length === 0 && <div className="text-sm text-gray-500">No active requests created by your account.</div>}
+    <ProtectedRoute role="hospital">
+      <main className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] pb-16 px-4">
+        <div className="max-w-5xl mx-auto space-y-8 pt-8">
+          
+          {/* HEADER SECTION */}
+          <header className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+            <div>
+              <span className="text-xs font-semibold text-[#9090A0] uppercase tracking-widest block">Coordinator Command</span>
+              <h1 className="text-2xl font-black text-white mt-1">Hospital Dashboard</h1>
+              <p className="text-xs text-[#9090A0] mt-0.5 font-mono">{user?.email}</p>
             </div>
-          )}
-        </section>
-      </div>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => router.push("/emergency")}
+                className="px-4 py-2.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(196,30,58,0.2)]"
+              >
+                <Plus className="h-4 w-4" /> Create Request
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+              >
+                <LogOut className="h-4 w-4" /> Sign Out
+              </button>
+            </div>
+          </header>
+
+          {/* ACTIVE REQUESTS LIST */}
+          <section className="space-y-4">
+            <div className="flex justify-between items-center border-b border-zinc-850 pb-3">
+              <h3 className="font-bold text-base text-white flex items-center gap-2">
+                <Heart className="h-5 w-5 text-[#C41E3A] animate-pulse" /> Emergency Broadcast Logs
+              </h3>
+              <span className="text-xs text-[#9090A0] font-semibold">{requests.length} Broadcasted</span>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12 space-y-3">
+                <Loader2 className="h-8 w-8 text-[#C41E3A] animate-spin mx-auto" />
+                <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Syncing database changes...</p>
+              </div>
+            ) : requests.length === 0 ? (
+              <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-12 text-center space-y-4">
+                <p className="text-sm text-[#9090A0]">No emergency requests registered under your coordinator account.</p>
+                <button
+                  onClick={() => router.push("/emergency")}
+                  className="px-5 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white font-bold rounded-lg text-xs transition-all inline-flex items-center gap-1"
+                >
+                  Create Your First Emergency Request <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {requests.map(req => {
+                  const resList = responsesMap[req.id] || [];
+                  const confirmedRes = resList.filter(r => r.status === "confirmed");
+                  const isFulfilled = req.status === "fulfilled";
+
+                  return (
+                    <div 
+                      key={req.id} 
+                      className={`bg-[#1A1A1A] border rounded-2xl p-6 shadow-xl space-y-6 relative overflow-hidden ${
+                        isFulfilled ? "border-zinc-850 opacity-80" : "border-zinc-800"
+                      }`}
+                    >
+                      {/* Header info */}
+                      <div className="flex justify-between items-start flex-wrap gap-4 border-b border-zinc-850 pb-4">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-2.5 py-0.5 bg-red-950 text-[#C41E3A] font-black text-xs rounded border border-[#C41E3A]/20">
+                              {req.blood_group_needed} Needed
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${
+                              req.urgency_level === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-500/20" : "bg-amber-950 text-amber-400 border border-amber-500/20"
+                            }`}>
+                              {req.urgency_level}
+                            </span>
+                            <span className="text-[10px] text-zinc-500">
+                              Posted: {new Date(req.created_at).toLocaleDateString("en-IN")} at {new Date(req.created_at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          
+                          <h4 className="text-base font-bold text-white flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4 text-[#C41E3A]" /> Hospital: {req.hospital_name}
+                          </h4>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => router.push(`/emergency/status/${req.id}`)}
+                            className="px-3 py-1.5 bg-zinc-950 hover:bg-black border border-zinc-800 text-[#9090A0] hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                          >
+                            Track Live Page <ExternalLinkIcon className="h-3.5 w-3.5" />
+                          </button>
+                          
+                          {!isFulfilled && (
+                            <button
+                              onClick={() => handleFulfillRequest(req.id)}
+                              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all"
+                            >
+                              Mark Fulfilled
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Donor responses detail */}
+                      <div className="space-y-3">
+                        <h5 className="text-xs font-extrabold uppercase tracking-wider text-[#9090A0]">Matched Donor Responses ({resList.length})</h5>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                          {resList.length === 0 ? (
+                            <div className="text-xs text-zinc-500 italic py-2 col-span-3">No donors matched yet. Alert broadcasts are pending review or active routing.</div>
+                          ) : (
+                            resList.map((res: any) => {
+                              const dInfo = res.donors;
+                              if (!dInfo) return null;
+                              
+                              const distance = getDistance(req.lat, req.lng, dInfo.lat, dInfo.lng);
+                              const eta = Math.round(distance * 2 + 5);
+
+                              return (
+                                <div 
+                                  key={res.id} 
+                                  className="bg-[#0F0F0F] rounded-xl border border-zinc-850 p-4 space-y-2.5 transition-all hover:border-zinc-800"
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs font-bold text-white">{dInfo.full_name}</span>
+                                    <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 font-extrabold text-[9px] rounded">
+                                      {dInfo.blood_group}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-[10px] text-zinc-400 space-y-1">
+                                    <div className="flex justify-between">
+                                      <span>Travel ETA:</span>
+                                      <span className="font-bold text-white">~ {eta} mins ({Math.round(distance * 10) / 10} km)</span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-1 border-t border-zinc-900 pt-1">
+                                      <Phone className="h-3 w-3 text-emerald-400" />
+                                      <span className="font-mono text-white text-[11px] font-bold">{dInfo.phone}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+        </div>
+      </main>
     </ProtectedRoute>
+  );
+}
+
+// Icon helper
+function ExternalLinkIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
   );
 }
