@@ -74,11 +74,17 @@ app.post("/auth/v1/token", (req, res) => {
   if (!user.tokens) user.tokens = [];
   user.tokens.push(token);
 
+  const profile = profiles[user.id];
   res.json({
     access_token: token,
     token_type: "bearer",
     expires_in: 3600,
-    user: { id: user.id, email: user.email, role: "authenticated" },
+    user: {
+      id: user.id,
+      email: user.email,
+      role: "authenticated",
+      user_metadata: { role: profile?.role || "donor" },
+    },
   });
 });
 

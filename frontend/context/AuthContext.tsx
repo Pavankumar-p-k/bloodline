@@ -47,7 +47,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          let r = await fetchProfile(session.user.id);
+          if (!r && session.user.user_metadata?.role) {
+            r = session.user.user_metadata.role;
+            setRole(r);
+          }
+          if (!r) {
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:5000"}/rest/v1/profiles?id=eq.${session.user.id}&select=role`,
+                { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "mock-anon-key-123" } }
+              );
+              const profiles = await res.json();
+              if (profiles?.[0]?.role) setRole(profiles[0].role);
+            } catch (_) {}
+          }
         }
       } catch (err) {
         console.error("Failed to restore session:", err);
@@ -64,7 +78,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          let r = await fetchProfile(session.user.id);
+          if (!r && session.user.user_metadata?.role) {
+            r = session.user.user_metadata.role;
+            setRole(r);
+          }
+          if (!r) {
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:5000"}/rest/v1/profiles?id=eq.${session.user.id}&select=role`,
+                { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "mock-anon-key-123" } }
+              );
+              const profiles = await res.json();
+              if (profiles?.[0]?.role) setRole(profiles[0].role);
+            } catch (_) {}
+          }
         } else {
           setUser(null);
           setRole(null);
@@ -130,7 +158,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!data.user) throw new Error("Invalid credentials");
 
       setUser(data.user);
-      const userRole = await fetchProfile(data.user.id);
+
+      // Try to fetch role from profiles table
+      let userRole = await fetchProfile(data.user.id);
+
+      // Fallback: use role from user_metadata (e.g., local-dev server)
+      if (!userRole && data.user.user_metadata?.role) {
+        userRole = data.user.user_metadata.role;
+        setRole(userRole);
+      }
+
+      // Last-resort fallback: direct fetch to REST API (handles local-dev without Supabase client)
+      if (!userRole) {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:5000"}/rest/v1/profiles?id=eq.${data.user.id}&select=role`,
+            { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "mock-anon-key-123" } }
+          );
+          const profiles = await res.json();
+          if (profiles?.[0]?.role) {
+            userRole = profiles[0].role;
+            setRole(userRole);
+          }
+        } catch (_) {}
+      }
+
       return userRole;
     } catch (err) {
       setLoading(false);
