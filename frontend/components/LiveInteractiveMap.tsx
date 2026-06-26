@@ -186,7 +186,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
   // Open response details flow
   const handleOpenResponse = (reqItem: any) => {
     if (!user) {
-      toast.push({ title: "Auth Required", description: "You must be signed in to help.", type: "warning", id: "map-auth-req" });
+      toast.push({ title: "Auth Required", description: "You must be signed in to help.", type: "info", id: "map-auth-req" });
       return;
     }
     if (role !== "donor") {
@@ -212,7 +212,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
         .single();
 
       if (dErr || !donorRecord) {
-        toast.push({ title: "Incomplete Profile", description: "Please complete your donor profile details first.", type: "warning", id: "map-profile-incomplete" });
+        toast.push({ title: "Incomplete Profile", description: "Please complete your donor profile details first.", type: "info", id: "map-profile-incomplete" });
         setSubmittingResponse(false);
         return;
       }

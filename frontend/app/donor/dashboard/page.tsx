@@ -65,7 +65,7 @@ export default function DonorDashboard() {
         toast.push({ 
           title: "Registration Incomplete", 
           description: "Redirecting to donor details form to complete registration.", 
-          type: "warning", 
+          type: "info", 
           id: "redirect-reg" 
         });
         router.push("/donor/register");
@@ -95,14 +95,14 @@ export default function DonorDashboard() {
       // Filter based on coordinates (distance <= donor.max_travel_km)
       if (requests) {
         const sorted = requests
-          .map(r => {
+          .map((r: any) => {
             const dist = getDistance(donor.lat, donor.lng, r.lat, r.lng);
             return { ...r, distance: dist };
           })
           // Filter within range
-          .filter(r => r.distance <= (donor.max_travel_km || 25))
+          .filter((r: any) => r.distance <= (donor.max_travel_km || 25))
           // Sort by urgency first (CRITICAL -> URGENT -> PLANNED) then distance
-          .sort((a, b) => {
+          .sort((a: any, b: any) => {
             const urgencyWeight: Record<string, number> = { "CRITICAL": 3, "URGENT": 2, "PLANNED": 1 };
             const weightA = urgencyWeight[a.urgency_level] || 0;
             const weightB = urgencyWeight[b.urgency_level] || 0;
