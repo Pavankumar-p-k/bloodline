@@ -49,7 +49,7 @@ export default function Navbar() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `donor_id=eq.${user.id}` },
-        (payload) => {
+        (payload: any) => {
           setNotifications((prev) => [payload.new, ...prev]);
           // Optional: Browser HTML5 Notification popup
           if (Notification.permission === "granted") {
