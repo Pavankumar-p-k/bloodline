@@ -29,6 +29,8 @@ function makeAuthStub() {
     getUser: async () => authRes({ user: null }),
     getSession: async () => authRes({ session: null }),
     signUp: async () => authRes({ user: { id: "local-" + Date.now() }, session: null }),
+    signInWithOtp: async () => authRes(null),
+    verifyOtp: async () => authRes({ user: { id: "local-" + Date.now() }, session: { access_token: "local" } }),
     signInWithPassword: async () => authRes({ user: { id: "local-" + Date.now() }, session: { access_token: "local" } }),
     signOut: async () => authRes(null),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
