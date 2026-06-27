@@ -46,7 +46,7 @@ create table public.donor_profiles (
   blood_group     public.blood_group not null,
   weight_kg       int not null check (weight_kg >= 50),
   last_donation   date,
-  next_eligible   date generated always as (last_donation + interval '90 days')::date stored,
+  next_eligible   date generated always as (last_donation + 90) stored,
   is_available    boolean default true,
   available_after timestamptz,
   max_travel_km   int default 10,
