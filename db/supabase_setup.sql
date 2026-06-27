@@ -304,7 +304,7 @@ create policy "Admin can update any inventory"
 -- ─── blood_requests ───
 create policy "Anyone can read active requests"
   on public.blood_requests for select
-  using (status = any (array['pending','active','partially_fulfilled']));
+  using (status = any ('{pending,active,partially_fulfilled}'::public.request_status[]));
 
 create policy "Creator can read own requests"
   on public.blood_requests for select
