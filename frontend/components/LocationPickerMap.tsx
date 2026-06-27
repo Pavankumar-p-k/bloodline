@@ -40,7 +40,7 @@ export default function LocationPickerMap({ lat, lng, onChange }: LocationPicker
   const position: [number, number] = [lat, lng];
 
   return (
-    <div className="w-full h-64 rounded-xl overflow-hidden border border-zinc-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+    <div className="w-full h-64 rounded-xl overflow-hidden border border-border shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
       <MapContainer
         center={position}
         zoom={13}

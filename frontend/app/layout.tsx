@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import VitalBackground from "../components/VitalBackground";
 import { ToastProvider } from "../components/ToastContext";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,18 +26,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <html lang="en" className="h-full bg-[#0A0A0A]">
+    <html lang="en" className="h-full bg-void">
       <head>
         <title>Bloodline - India Blood Response Network</title>
         <meta name="description" content="Connect blood donors to patients in real time across India" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#C41E3A" />
+        <meta name="theme-color" content="#E8192C" />
         <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-584515979956-d9f6e5d09982?w=192&h=192&fit=crop" />
       </head>
-      <body className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] font-sans antialiased flex flex-col h-full">
+      <body className="min-h-screen bg-void text-text font-body antialiased flex flex-col h-full">
+        <VitalBackground />
         <AuthProvider>
           <ToastProvider>
-            <div className="flex flex-col min-h-screen pb-16 sm:pb-0">
+            <div className="flex flex-col min-h-screen">
               <Navbar />
               <main className="flex-1 w-full mx-auto">{children}</main>
             </div>

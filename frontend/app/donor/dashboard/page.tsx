@@ -289,7 +289,7 @@ export default function DonorDashboard() {
 
     // Watermark drop
     ctx.font = "bold 60px sans-serif";
-    ctx.fillText("🩸", 400, 490);
+    ctx.fillText("ðŸ©¸", 400, 490);
 
     // Download file
     const link = document.createElement("a");
@@ -300,8 +300,8 @@ export default function DonorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center text-zinc-500 gap-2">
-        <Activity className="h-10 w-10 text-[#C41E3A] animate-spin" />
+      <div className="min-h-screen bg-void flex flex-col items-center justify-center text-text-3 gap-2">
+        <Activity className="h-10 w-10 text-vital animate-spin" />
         <span className="text-sm font-semibold tracking-widest">Loading Donor Dashboard...</span>
       </div>
     );
@@ -309,49 +309,49 @@ export default function DonorDashboard() {
 
   return (
     <ProtectedRoute role="donor">
-      <main className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] pb-16 px-4">
+      <main className="min-h-screen bg-void text-text pb-16 px-4">
         <div className="max-w-6xl mx-auto space-y-8 pt-8">
           
           {/* HEADER SECTION */}
           {donorRecord && (
-            <section className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-900/10 rounded-full blur-3xl -z-10" />
+            <section className="bg-surface border border-border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-vital-dim rounded-full blur-3xl -z-10" />
               
               <div className="flex items-center gap-4 flex-col sm:flex-row text-center sm:text-left">
                 {/* Visual Avatar */}
-                <div className="w-20 h-20 rounded-full bg-red-950 border-2 border-[#C41E3A] flex items-center justify-center text-3xl font-black text-white relative">
+                <div className="w-20 h-20 rounded-full bg-vital-dim border-2 border-vital flex items-center justify-center text-3xl font-black text-white relative">
                   <span>{donorRecord.full_name.charAt(0)}</span>
-                  <div className="absolute -bottom-1 -right-1 bg-[#C41E3A] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-white">
+                  <div className="absolute -bottom-1 -right-1 bg-vital text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-white">
                     {donorRecord.blood_group}
                   </div>
                 </div>
                 
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <h2 className="text-2xl font-black text-[#F5F5F5]">{donorRecord.full_name}</h2>
-                    <span className="bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <h2 className="text-2xl font-black text-text">{donorRecord.full_name}</h2>
+                    <span className="bg-confirmed/10 border border-confirmed/30 text-confirmed text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                       Verified Life Saver
                     </span>
                   </div>
-                  <p className="text-sm text-[#9090A0]">
+                  <p className="text-sm text-text-2">
                     Registered donor since {new Date(donorRecord.created_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
                   </p>
-                  <p className="text-xs text-zinc-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-[#C41E3A]" /> Approximate Coordinates: {donorRecord.lat.toFixed(4)}, {donorRecord.lng.toFixed(4)}
+                  <p className="text-xs text-text-3 font-semibold flex items-center justify-center sm:justify-start gap-1">
+                    <MapPin className="h-3.5 w-3.5 text-vital" /> Approximate Coordinates: {donorRecord.lat.toFixed(4)}, {donorRecord.lng.toFixed(4)}
                   </p>
                 </div>
               </div>
 
               {/* Counter Metrics */}
-              <div className="flex gap-4 sm:gap-6 bg-zinc-950/60 p-4 rounded-xl border border-zinc-800/80">
+              <div className="flex gap-4 sm:gap-6 bg-void/60 p-4 rounded-xl border border-border/80">
                 <div className="text-center px-2">
-                  <span className="block text-2xl font-black text-[#C41E3A]">{donationsHistory.length}</span>
-                  <span className="text-[10px] font-bold text-[#9090A0] uppercase tracking-wider">Donations</span>
+                  <span className="block text-2xl font-black text-vital">{donationsHistory.length}</span>
+                  <span className="text-[10px] font-bold text-text-2 uppercase tracking-wider">Donations</span>
                 </div>
-                <div className="border-l border-zinc-800" />
+                <div className="border-l border-border" />
                 <div className="text-center px-2">
                   <span className="block text-2xl font-black text-white">{donationsHistory.length * 3}</span>
-                  <span className="text-[10px] font-bold text-[#9090A0] uppercase tracking-wider">Lives Saved</span>
+                  <span className="text-[10px] font-bold text-text-2 uppercase tracking-wider">Lives Saved</span>
                 </div>
               </div>
             </section>
@@ -366,16 +366,16 @@ export default function DonorDashboard() {
                 onClick={toggleAvailability}
                 className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
                   donorRecord.is_available 
-                    ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(34,197,94,0.06)] hover:border-emerald-500/50" 
-                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                    ? "bg-confirmed/5 border-confirmed/20 text-confirmed shadow-confirmed-glow hover:border-emerald-500/50" 
+                    : "bg-surface border-border text-text-2 hover:border-border-2"
                 }`}
               >
                 <div>
-                  <span className="block text-sm font-bold text-[#F5F5F5]">Emergency Availability</span>
+                  <span className="block text-sm font-bold text-text">Emergency Availability</span>
                   <span className="text-xs">{donorRecord.is_available ? "Available to donate now" : "Unavailable temporarily"}</span>
                 </div>
                 {donorRecord.is_available ? (
-                  <ToggleRight className="h-8 w-8 text-[#C41E3A]" />
+                  <ToggleRight className="h-8 w-8 text-vital" />
                 ) : (
                   <ToggleLeft className="h-8 w-8 text-zinc-600" />
                 )}
@@ -385,25 +385,25 @@ export default function DonorDashboard() {
               <button 
                 onClick={updateCoords}
                 disabled={updatingLocation}
-                className="flex items-center justify-between p-4 bg-[#1A1A1A] border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all text-left group"
+                className="flex items-center justify-between p-4 bg-surface border border-border hover:border-border-2 rounded-xl transition-all text-left group"
               >
                 <div>
-                  <span className="block text-sm font-bold text-[#F5F5F5] group-hover:text-[#C41E3A] transition-colors">Update GPS Coordinates</span>
-                  <span className="text-xs text-[#9090A0]">Refreshes your approximate marker</span>
+                  <span className="block text-sm font-bold text-text group-hover:text-vital transition-colors">Update GPS Coordinates</span>
+                  <span className="text-xs text-text-2">Refreshes your approximate marker</span>
                 </div>
-                <Compass className={`h-6 w-6 text-[#C41E3A] ${updatingLocation ? 'animate-spin' : ''}`} />
+                <Compass className={`h-6 w-6 text-vital ${updatingLocation ? 'animate-spin' : ''}`} />
               </button>
 
               {/* View Map */}
               <button 
                 onClick={() => router.push("/map")}
-                className="flex items-center justify-between p-4 bg-[#1A1A1A] border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all text-left group"
+                className="flex items-center justify-between p-4 bg-surface border border-border hover:border-border-2 rounded-xl transition-all text-left group"
               >
                 <div>
-                  <span className="block text-sm font-bold text-[#F5F5F5] group-hover:text-[#C41E3A] transition-colors">View Live Map</span>
-                  <span className="text-xs text-[#9090A0]">Check active emergency requests</span>
+                  <span className="block text-sm font-bold text-text group-hover:text-vital transition-colors">View Live Map</span>
+                  <span className="text-xs text-text-2">Check active emergency requests</span>
                 </div>
-                <ArrowRight className="h-6 w-6 text-[#C41E3A] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-6 w-6 text-vital group-hover:translate-x-1 transition-transform" />
               </button>
 
             </section>
@@ -413,32 +413,32 @@ export default function DonorDashboard() {
           {donorRecord && (
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
-              <div className="bg-[#1A1A1A] p-4 rounded-xl border border-zinc-800">
-                <span className="text-[#9090A0] text-xs font-bold uppercase tracking-wider block">Donations this year</span>
-                <span className="text-2xl font-black text-[#F5F5F5] mt-1 block">
+              <div className="bg-surface p-4 rounded-xl border border-border">
+                <span className="text-text-2 text-xs font-bold uppercase tracking-wider block">Donations this year</span>
+                <span className="text-2xl font-black text-text mt-1 block">
                   {donationsHistory.filter(d => new Date(d.donation_date).getFullYear() === new Date().getFullYear()).length}
                 </span>
               </div>
 
-              <div className="bg-[#1A1A1A] p-4 rounded-xl border border-zinc-800">
-                <span className="text-[#9090A0] text-xs font-bold uppercase tracking-wider block">Last Donation Date</span>
-                <span className="text-2xl font-black text-[#F5F5F5] mt-1 block">
+              <div className="bg-surface p-4 rounded-xl border border-border">
+                <span className="text-text-2 text-xs font-bold uppercase tracking-wider block">Last Donation Date</span>
+                <span className="text-2xl font-black text-text mt-1 block">
                   {donorRecord.last_donation_date ? new Date(donorRecord.last_donation_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Never"}
                 </span>
               </div>
 
-              <div className="bg-[#1A1A1A] p-4 rounded-xl border border-zinc-800">
-                <span className="text-[#9090A0] text-xs font-bold uppercase tracking-wider block">Next Eligibility</span>
-                <span className={`text-2xl font-black mt-1 block ${eligibility.eligible ? "text-emerald-400" : "text-amber-500"}`}>
+              <div className="bg-surface p-4 rounded-xl border border-border">
+                <span className="text-text-2 text-xs font-bold uppercase tracking-wider block">Next Eligibility</span>
+                <span className={`text-2xl font-black mt-1 block ${eligibility.eligible ? "text-confirmed" : "text-warning"}`}>
                   {eligibility.eligible ? "Eligible Now" : eligibility.date}
                 </span>
                 {!eligibility.eligible && (
-                  <span className="text-[10px] text-zinc-500 font-semibold block mt-0.5">{eligibility.daysLeft} days remaining</span>
+                  <span className="text-[10px] text-text-3 font-semibold block mt-0.5">{eligibility.daysLeft} days remaining</span>
                 )}
               </div>
 
-              <div className="bg-[#1A1A1A] p-4 rounded-xl border border-zinc-800">
-                <span className="text-[#9090A0] text-xs font-bold uppercase tracking-wider block">Range Radius Limit</span>
+              <div className="bg-surface p-4 rounded-xl border border-border">
+                <span className="text-text-2 text-xs font-bold uppercase tracking-wider block">Range Radius Limit</span>
                 <span className="text-2xl font-black text-white mt-1 block">
                   {donorRecord.max_travel_km} km
                 </span>
@@ -454,33 +454,33 @@ export default function DonorDashboard() {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Nearby Requests Section */}
-              <div className="bg-[#1A1A1A] rounded-2xl border border-zinc-800 p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div className="bg-surface rounded-2xl border border-border p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-border pb-3">
                   <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5 text-[#C41E3A]" />
-                    <h3 className="font-bold text-base text-[#F5F5F5]">Matching Emergencies Nearby</h3>
+                    <ShieldAlert className="h-5 w-5 text-vital" />
+                    <h3 className="font-bold text-base text-text">Matching Emergencies Nearby</h3>
                   </div>
-                  <span className="text-xs text-zinc-500 font-semibold">{nearbyRequests.length} active matching cases</span>
+                  <span className="text-xs text-text-3 font-semibold">{nearbyRequests.length} active matching cases</span>
                 </div>
 
                 <div className="space-y-3">
                   {nearbyRequests.length === 0 ? (
-                    <div className="text-center py-8 text-xs text-[#9090A0]">
+                    <div className="text-center py-8 text-xs text-text-2">
                       No active emergency requests found in your range matching your blood group.
                     </div>
                   ) : (
                     nearbyRequests.map(r => (
                       <div 
                         key={r.id}
-                        className="bg-[#0F0F0F] p-4 border border-zinc-800/80 hover:border-zinc-700 rounded-xl flex items-center justify-between gap-4 transition-all"
+                        className="bg-surface-2 p-4 border border-border/80 hover:border-border-2 rounded-xl flex items-center justify-between gap-4 transition-all"
                       >
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="px-2 py-0.5 bg-red-950 text-[#C41E3A] font-extrabold text-xs rounded border border-[#C41E3A]/30">
+                            <span className="px-2 py-0.5 bg-vital-dim text-vital font-extrabold text-xs rounded border border-vital/30">
                               {r.blood_group_needed}
                             </span>
                             <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${
-                              r.urgency_level === "CRITICAL" ? "bg-red-950/60 text-red-400 border border-red-500/20" : "bg-amber-950/60 text-amber-400 border border-amber-500/20"
+                              r.urgency_level === "CRITICAL" ? "bg-vital-mid text-vital border border-vital-dim" : "bg-warning/10 text-warning border border-warning/20"
                             }`}>
                               {r.urgency_level}
                             </span>
@@ -488,7 +488,7 @@ export default function DonorDashboard() {
                           
                           <h4 className="text-sm font-bold text-white truncate">{r.hospital_name}</h4>
                           
-                          <div className="flex flex-wrap text-[10px] text-[#9090A0] gap-x-4">
+                          <div className="flex flex-wrap text-[10px] text-text-2 gap-x-4">
                             <span>Bags: {r.units_needed}</span>
                             <span>Distance: {Math.round(r.distance * 10) / 10} km</span>
                             <span>Posted {new Date(r.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
@@ -497,7 +497,7 @@ export default function DonorDashboard() {
 
                         <button
                           onClick={() => router.push("/map")}
-                          className="px-4 py-2 bg-red-950/30 border border-[#C41E3A]/40 text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white rounded-lg text-xs font-bold transition-all flex-shrink-0"
+                          className="px-4 py-2 bg-vital-dim border border-vital/40 text-vital hover:bg-vital hover:text-white rounded-lg text-xs font-bold transition-all flex-shrink-0"
                         >
                           Respond
                         </button>
@@ -508,15 +508,15 @@ export default function DonorDashboard() {
               </div>
 
               {/* Timeline/History Section */}
-              <div className="bg-[#1A1A1A] rounded-2xl border border-zinc-800 p-6 space-y-4">
-                <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                  <Award className="h-5 w-5 text-[#C41E3A]" />
-                  <h3 className="font-bold text-base text-[#F5F5F5]">My Donation History</h3>
+              <div className="bg-surface rounded-2xl border border-border p-6 space-y-4">
+                <div className="flex items-center gap-2 border-b border-border pb-3">
+                  <Award className="h-5 w-5 text-vital" />
+                  <h3 className="font-bold text-base text-text">My Donation History</h3>
                 </div>
 
-                <div className="relative border-l-2 border-zinc-800 pl-4 ml-2 space-y-6 py-2">
+                <div className="relative border-l-2 border-border pl-4 ml-2 space-y-6 py-2">
                   {donationsHistory.length === 0 ? (
-                    <div className="text-xs text-[#9090A0] pl-2">
+                    <div className="text-xs text-text-2 pl-2">
                       No logs found. Your contributions will appear here once verified by hospitals.
                     </div>
                   ) : (
@@ -524,30 +524,30 @@ export default function DonorDashboard() {
                       <div key={don.id} className="relative group">
                         
                         {/* Bullet point indicator */}
-                        <div className="absolute -left-[23px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#C41E3A] border-2 border-[#1A1A1A] shadow-[0_0_6px_#C41E3A]" />
+                        <div className="absolute -left-[23px] top-1.5 w-3.5 h-3.5 rounded-full bg-vital border-2 border-[#1A1A1A] shadow-vital-glow" />
 
-                        <div className="bg-[#0F0F0F] border border-zinc-800/80 p-4 rounded-xl space-y-2.5">
+                        <div className="bg-surface-2 border border-border/80 p-4 rounded-xl space-y-2.5">
                           <div className="flex justify-between items-start flex-wrap gap-2">
                             <div>
-                              <span className="text-[10px] text-[#9090A0] font-semibold block">Donation Date</span>
+                              <span className="text-[10px] text-text-2 font-semibold block">Donation Date</span>
                               <span className="text-sm font-bold text-white">{new Date(don.donation_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
                             </div>
                             
                             <button
                               onClick={() => downloadDonationCertificate(don)}
-                              className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[#9090A0] hover:text-white rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all"
+                              className="px-2.5 py-1.5 bg-surface border border-border hover:border-border-2 text-text-2 hover:text-white rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all"
                             >
-                              <Download className="h-3 w-3 text-[#C41E3A]" /> Certificate
+                              <Download className="h-3 w-3 text-vital" /> Certificate
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 text-[11px] text-zinc-400">
+                          <div className="grid grid-cols-2 gap-2 text-[11px] text-text-2">
                             <div>
-                              <span className="text-zinc-500 block">Hospital</span>
+                              <span className="text-text-3 block">Hospital</span>
                               <span className="font-semibold text-zinc-200">{don.hospital_name}</span>
                             </div>
                             <div>
-                              <span className="text-zinc-500 block">Units Donated</span>
+                              <span className="text-text-3 block">Units Donated</span>
                               <span className="font-semibold text-zinc-200">{don.units_donated || 1} Bag</span>
                             </div>
                           </div>
@@ -564,10 +564,10 @@ export default function DonorDashboard() {
             {/* RIGHT COLUMN: NOTIFICATION SETTINGS */}
             <div className="space-y-8">
               
-              <div className="bg-[#1A1A1A] rounded-2xl border border-zinc-800 p-6 space-y-6">
-                <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
-                  <Bell className="h-5 w-5 text-[#C41E3A]" />
-                  <h3 className="font-bold text-base text-[#F5F5F5]">Alert Preferences</h3>
+              <div className="bg-surface rounded-2xl border border-border p-6 space-y-6">
+                <div className="flex items-center gap-2 border-b border-border pb-3">
+                  <Bell className="h-5 w-5 text-vital" />
+                  <h3 className="font-bold text-base text-text">Alert Preferences</h3>
                 </div>
 
                 <div className="space-y-4">
@@ -575,12 +575,12 @@ export default function DonorDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm font-semibold block text-white">SMS Alerts</span>
-                      <span className="text-[10px] text-[#9090A0]">For urgent emergency requests</span>
+                      <span className="text-[10px] text-text-2">For urgent emergency requests</span>
                     </div>
                     <button 
                       type="button"
                       onClick={() => setNotifSms(!notifSms)}
-                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifSms ? 'bg-[#C41E3A]' : 'bg-zinc-800'}`}
+                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifSms ? 'bg-vital' : 'bg-surface-2'}`}
                     >
                       <div className={`bg-white w-4 h-4 rounded-full transform duration-200 ${notifSms ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
@@ -590,12 +590,12 @@ export default function DonorDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm font-semibold block text-white">WhatsApp Alerts</span>
-                      <span className="text-[10px] text-[#9090A0]">Updates on responses & confirmation</span>
+                      <span className="text-[10px] text-text-2">Updates on responses & confirmation</span>
                     </div>
                     <button 
                       type="button"
                       onClick={() => setNotifWhatsapp(!notifWhatsapp)}
-                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifWhatsapp ? 'bg-[#C41E3A]' : 'bg-zinc-800'}`}
+                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifWhatsapp ? 'bg-vital' : 'bg-surface-2'}`}
                     >
                       <div className={`bg-white w-4 h-4 rounded-full transform duration-200 ${notifWhatsapp ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
@@ -605,27 +605,27 @@ export default function DonorDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm font-semibold block text-white">Quiet Hours (10 PM - 7 AM)</span>
-                      <span className="text-[10px] text-[#9090A0]">Do not disturb except Criticals</span>
+                      <span className="text-[10px] text-text-2">Do not disturb except Criticals</span>
                     </div>
                     <button 
                       type="button"
                       onClick={() => setNotifQuietHours(!notifQuietHours)}
-                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifQuietHours ? 'bg-[#C41E3A]' : 'bg-zinc-800'}`}
+                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifQuietHours ? 'bg-vital' : 'bg-surface-2'}`}
                     >
                       <div className={`bg-white w-4 h-4 rounded-full transform duration-200 ${notifQuietHours ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
                   </div>
 
                   {/* Emergency Override */}
-                  <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
+                  <div className="flex items-center justify-between border-t border-border pt-4">
                     <div>
                       <span className="text-sm font-semibold block text-white">Critical Override</span>
-                      <span className="text-[10px] text-[#9090A0]">Always ring for CRITICAL cases</span>
+                      <span className="text-[10px] text-text-2">Always ring for CRITICAL cases</span>
                     </div>
                     <button 
                       type="button"
                       onClick={() => setNotifOverride(!notifOverride)}
-                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifOverride ? 'bg-[#C41E3A]' : 'bg-zinc-800'}`}
+                      className={`w-10 h-5 rounded-full p-0.5 transition-colors focus:outline-none ${notifOverride ? 'bg-vital' : 'bg-surface-2'}`}
                     >
                       <div className={`bg-white w-4 h-4 rounded-full transform duration-200 ${notifOverride ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
@@ -635,7 +635,7 @@ export default function DonorDashboard() {
                 <div className="pt-2">
                   <button
                     onClick={() => toast.push({ title: "Preferences Saved", description: "Your notification settings have been updated.", type: "success", id: "pref-saved" })}
-                    className="w-full py-2.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white text-xs font-bold rounded-lg transition-all"
+                    className="w-full py-2.5 bg-vital hover:bg-vital text-white text-xs font-bold rounded-lg transition-all"
                   >
                     Save Preference
                   </button>

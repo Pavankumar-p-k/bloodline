@@ -22,7 +22,7 @@ export default function HospitalProfilePage() {
         <h1 className="text-2xl font-semibold">Hospital profile</h1>
         <div className="mt-4 p-4 border rounded bg-white">
           {error ? (
-            <div className="text-sm text-red-500">{error}</div>
+            <div className="text-sm text-vital">{error}</div>
           ) : !profile ? (
             <div className="text-sm text-gray-500">Loading...</div>
           ) : (

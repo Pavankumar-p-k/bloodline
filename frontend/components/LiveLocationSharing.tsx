@@ -159,7 +159,7 @@ export default function LiveLocationSharing() {
           </div>
           <div className="text-xs text-gray-500">
             {error ? (
-              <span className="text-red-500">{error}</span>
+              <span className="text-vital">{error}</span>
             ) : currentPos ? (
               `${currentPos.latitude.toFixed(4)}, ${currentPos.longitude.toFixed(4)}`
             ) : (

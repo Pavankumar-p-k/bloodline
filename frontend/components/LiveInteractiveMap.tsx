@@ -32,7 +32,7 @@ const youIcon = L.divIcon({
   className: "",
   html: `<div class="relative flex items-center justify-center">
            <div class="absolute w-8 h-8 rounded-full bg-blue-500 animate-pulse opacity-40"></div>
-           <div class="relative w-6 h-6 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-[10px] text-white font-extrabold shadow-lg">👤</div>
+           <div class="relative w-6 h-6 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-[10px] text-white font-extrabold shadow-lg">ðŸ‘¤</div>
          </div>`,
   iconSize: [24, 24],
   iconAnchor: [12, 12],
@@ -55,7 +55,7 @@ const requestIcon = (urgency: string, bloodGroup: string) => {
     className: "",
     html: `<div class="relative flex items-center justify-center">
              <div class="absolute ${isCritical ? 'w-12 h-12 bg-red-600' : 'w-9 h-9 bg-rose-500'} rounded-full animate-ping opacity-55"></div>
-             <div class="relative w-8 h-8 rounded-full bg-[#C41E3A] border-2 border-white flex flex-col items-center justify-center text-[9px] text-white font-extrabold shadow-[0_0_12px_#C41E3A]">
+             <div class="relative w-8 h-8 rounded-full bg-vital border-2 border-white flex flex-col items-center justify-center text-[9px] text-white font-extrabold shadow-[0_0_12px_#C41E3A]">
                <span>${bloodGroup}</span>
              </div>
            </div>`,
@@ -247,23 +247,23 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
   };
 
   return (
-    <div className="flex h-[88vh] bg-[#0A0A0A] overflow-hidden border-t border-zinc-900 relative">
+    <div className="flex h-[88vh] bg-void overflow-hidden border-t border-zinc-900 relative">
       
       {/* SIDEBAR FOR ACTIVE REQUESTS (Collapsible) */}
       <div 
-        className={`bg-[#1A1A1A] border-r border-zinc-800 transition-all duration-300 flex flex-col z-20 absolute sm:relative h-full ${
+        className={`bg-surface border-r border-border transition-all duration-300 flex flex-col z-20 absolute sm:relative h-full ${
           sidebarOpen ? "w-80 left-0" : "w-0 -left-80 sm:left-0 sm:w-0 overflow-hidden border-r-0"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/40">
+        <div className="p-4 border-b border-border flex justify-between items-center bg-surface/40">
           <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-[#C41E3A]" />
-            <h3 className="font-bold text-[#F5F5F5] text-sm uppercase tracking-wider">Active Emergencies</h3>
+            <Heart className="h-5 w-5 text-vital" />
+            <h3 className="font-bold text-text text-sm uppercase tracking-wider">Active Emergencies</h3>
           </div>
           <button 
             onClick={() => setSidebarOpen(false)}
-            className="sm:hidden text-zinc-500 hover:text-white"
+            className="sm:hidden text-text-3 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -274,11 +274,11 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(n => (
-                <div key={n} className="h-24 bg-zinc-900 animate-pulse rounded-xl border border-zinc-800/40" />
+                <div key={n} className="h-24 bg-surface animate-pulse rounded-xl border border-border/40" />
               ))}
             </div>
           ) : filteredRequests.length === 0 ? (
-            <div className="text-center py-10 text-xs text-[#9090A0]">No matching emergency requests found nearby.</div>
+            <div className="text-center py-10 text-xs text-text-2">No matching emergency requests found nearby.</div>
           ) : (
             filteredRequests.map(r => {
               const dist = getDistance(userLat, userLng, r.lat, r.lng);
@@ -287,31 +287,31 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
               return (
                 <div 
                   key={r.id}
-                  className={`bg-[#0F0F0F] rounded-xl border p-4 space-y-3 transition-all relative overflow-hidden group hover:border-zinc-700 ${
+                  className={`bg-surface-2 rounded-xl border p-4 space-y-3 transition-all relative overflow-hidden group hover:border-border-2 ${
                     isCritical 
                       ? "border-red-900/60 shadow-[0_0_12px_rgba(196,30,58,0.08)]" 
-                      : "border-zinc-800"
+                      : "border-border"
                   }`}
                 >
                   {/* Urgency Color Strip */}
                   <div className={`absolute top-0 left-0 w-1 h-full ${
-                    r.urgency_level === "CRITICAL" ? "bg-[#C41E3A]" : r.urgency_level === "URGENT" ? "bg-amber-500" : "bg-blue-500"
+                    r.urgency_level === "CRITICAL" ? "bg-vital" : r.urgency_level === "URGENT" ? "bg-amber-500" : "bg-blue-500"
                   }`} />
 
                   {/* Header: Blood and Distance */}
                   <div className="flex justify-between items-center pl-1">
-                    <span className="px-2.5 py-1 bg-red-950/50 border border-red-600/40 text-[#C41E3A] font-black text-sm rounded-lg">
+                    <span className="px-2.5 py-1 bg-vital-dim border border-vital-mid text-vital font-black text-sm rounded-lg">
                       {r.blood_group_needed}
                     </span>
-                    <span className="text-[11px] text-[#9090A0] font-semibold flex items-center gap-1">
+                    <span className="text-[11px] text-text-2 font-semibold flex items-center gap-1">
                       <Navigation className="h-3 w-3" /> {Math.round(dist * 10) / 10} km
                     </span>
                   </div>
 
                   {/* Hospital & Time details */}
                   <div className="space-y-1 pl-1">
-                    <h4 className="text-xs font-bold text-[#F5F5F5] truncate">{r.hospital_name}</h4>
-                    <div className="flex justify-between text-[10px] text-[#9090A0]">
+                    <h4 className="text-xs font-bold text-text truncate">{r.hospital_name}</h4>
+                    <div className="flex justify-between text-[10px] text-text-2">
                       <span>{r.requester_type}</span>
                       <span>{getTimeElapsed(r.created_at)}</span>
                     </div>
@@ -320,7 +320,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
                   {/* Respond button */}
                   <button
                     onClick={() => handleOpenResponse(r)}
-                    className="w-full py-2 bg-red-950/20 border border-[#C41E3A]/40 text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white rounded-lg text-xs font-extrabold transition-all"
+                    className="w-full py-2 bg-vital-dim border border-vital/40 text-vital hover:bg-vital hover:text-white rounded-lg text-xs font-extrabold transition-all"
                   >
                     I Can Help
                   </button>
@@ -335,9 +335,9 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
-          className="absolute left-4 top-16 bg-[#1A1A1A] border border-zinc-800 text-white p-3 rounded-full z-10 shadow-lg"
+          className="absolute left-4 top-16 bg-surface border border-border text-white p-3 rounded-full z-10 shadow-lg"
         >
-          <Compass className="h-5 w-5 text-[#C41E3A]" />
+          <Compass className="h-5 w-5 text-vital" />
         </button>
       )}
 
@@ -345,14 +345,14 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
       <div className="flex-1 h-full relative">
         
         {/* TOP FLOATING FILTERS BAR */}
-        <div className="absolute top-4 left-4 right-4 z-10 bg-[#1A1A1A]/95 border border-zinc-800/80 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl backdrop-blur-md">
+        <div className="absolute top-4 left-4 right-4 z-10 bg-surface/95 border border-border/80 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xl backdrop-blur-md">
           <div className="flex flex-wrap items-center gap-3">
             
             {/* Blood Type Filter */}
             <select
               value={filterBlood}
               onChange={(e) => setFilterBlood(e.target.value)}
-              className="bg-[#0F0F0F] border border-zinc-800 rounded-lg text-xs text-[#F5F5F5] py-2 px-3 focus:outline-none"
+              className="bg-surface-2 border border-border rounded-lg text-xs text-text py-2 px-3 focus:outline-none"
             >
               <option value="">Blood Group (All)</option>
               {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(b => (
@@ -364,7 +364,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
             <select
               value={filterDistance}
               onChange={(e) => setFilterDistance(Number(e.target.value))}
-              className="bg-[#0F0F0F] border border-zinc-800 rounded-lg text-xs text-[#F5F5F5] py-2 px-3 focus:outline-none"
+              className="bg-surface-2 border border-border rounded-lg text-xs text-text py-2 px-3 focus:outline-none"
             >
               <option value={5}>Within 5 km</option>
               <option value={10}>Within 10 km</option>
@@ -377,7 +377,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
             <select
               value={filterUrgency}
               onChange={(e) => setFilterUrgency(e.target.value)}
-              className="bg-[#0F0F0F] border border-zinc-800 rounded-lg text-xs text-[#F5F5F5] py-2 px-3 focus:outline-none"
+              className="bg-surface-2 border border-border rounded-lg text-xs text-text py-2 px-3 focus:outline-none"
             >
               <option value="">Urgency (All)</option>
               <option value="CRITICAL">CRITICAL</option>
@@ -387,13 +387,13 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
           </div>
 
           {/* Toggle Layers */}
-          <div className="flex items-center gap-1.5 bg-[#0F0F0F] p-0.5 rounded-lg border border-zinc-800">
+          <div className="flex items-center gap-1.5 bg-surface-2 p-0.5 rounded-lg border border-border">
             {['both', 'requests', 'donors'].map(l => (
               <button
                 key={l}
                 onClick={() => setShowLayer(l)}
                 className={`text-[10px] uppercase font-extrabold px-3 py-1.5 rounded-md transition-all ${
-                  showLayer === l ? 'bg-[#C41E3A] text-white' : 'text-[#9090A0] hover:text-white'
+                  showLayer === l ? 'bg-vital text-white' : 'text-text-2 hover:text-white'
                 }`}
               >
                 {l}
@@ -407,7 +407,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
           center={[userLat, userLng]}
           zoom={12}
           className="w-full h-full"
-          style={{ background: "#0A0A0A" }}
+          style={{ background: "#060608" }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -435,13 +435,13 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
                 <Popup>
                   <div className="text-xs p-1.5 space-y-2 max-w-[200px]">
                     <div className="flex justify-between items-center">
-                      <span className="font-extrabold text-[#C41E3A]">{r.blood_group_needed} Needed</span>
+                      <span className="font-extrabold text-vital">{r.blood_group_needed} Needed</span>
                       <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
-                        r.urgency_level === "CRITICAL" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"
+                        r.urgency_level === "CRITICAL" ? "bg-vital-dim text-vital" : "bg-warning/10 text-warning"
                       }`}>{r.urgency_level}</span>
                     </div>
 
-                    <div className="text-[10px] text-zinc-400 space-y-0.5">
+                    <div className="text-[10px] text-text-2 space-y-0.5">
                       <p className="font-bold text-zinc-200">{r.hospital_name}</p>
                       <p>Units needed: {r.units_needed}</p>
                       <p>Distance: {Math.round(dist * 10) / 10} km</p>
@@ -449,7 +449,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
 
                     <button
                       onClick={() => handleOpenResponse(r)}
-                      className="w-full py-1.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white font-extrabold rounded text-[9px] transition-all uppercase"
+                      className="w-full py-1.5 bg-vital hover:bg-vital text-white font-extrabold rounded text-[9px] transition-all uppercase"
                     >
                       Respond to Request
                     </button>
@@ -470,8 +470,8 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
               >
                 <Popup>
                   <div className="text-xs p-1.5 space-y-1.5">
-                    <p className="font-extrabold text-emerald-400">Verified Donor ({d.blood_group})</p>
-                    <div className="text-[10px] text-zinc-400 space-y-0.5">
+                    <p className="font-extrabold text-confirmed">Verified Donor ({d.blood_group})</p>
+                    <div className="text-[10px] text-text-2 space-y-0.5">
                       <p className="font-semibold text-zinc-200">{d.full_name}</p>
                       <p>City: {d.city}, {d.area}</p>
                       <p>Distance: {Math.round(dist * 10) / 10} km</p>
@@ -487,31 +487,31 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
       {/* CONFIRMATION RESPOND MODAL */}
       {responseModalOpen && selectedRequest && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-5 shadow-2xl relative">
+          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-md space-y-5 shadow-2xl relative">
             
             <button
               onClick={() => setResponseModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white"
+              className="absolute top-4 right-4 text-text-3 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
 
             {/* Header */}
             <div className="text-center space-y-2">
-              <div className="inline-flex p-3 rounded-full bg-red-950/60 text-[#C41E3A] mb-1">
+              <div className="inline-flex p-3 rounded-full bg-vital-mid text-vital mb-1">
                 <Heart className="h-7 w-7 animate-pulse" />
               </div>
               <h3 className="text-lg font-bold text-white">Can you donate today?</h3>
-              <p className="text-xs text-[#9090A0]">
+              <p className="text-xs text-text-2">
                 Confirming matches you directly to this emergency case.
               </p>
             </div>
 
             {/* Travel details */}
-            <div className="bg-[#0F0F0F] rounded-xl border border-zinc-800 p-4 space-y-3.5 text-xs text-zinc-300">
+            <div className="bg-surface-2 rounded-xl border border-border p-4 space-y-3.5 text-xs text-text">
               <div className="flex justify-between items-center">
                 <span>Blood Type Needed:</span>
-                <span className="font-bold text-[#C41E3A] text-sm">{selectedRequest.blood_group_needed}</span>
+                <span className="font-bold text-vital text-sm">{selectedRequest.blood_group_needed}</span>
               </div>
               
               <div className="flex justify-between items-center">
@@ -526,9 +526,9 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
                 </span>
               </div>
 
-              <div className="flex justify-between items-center border-t border-zinc-800/80 pt-3">
-                <span className="flex items-center gap-1 text-[#9090A0]"><Clock className="h-3.5 w-3.5" /> Estimated Travel:</span>
-                <span className="font-bold text-emerald-400">
+              <div className="flex justify-between items-center border-t border-border/80 pt-3">
+                <span className="flex items-center gap-1 text-text-2"><Clock className="h-3.5 w-3.5" /> Estimated Travel:</span>
+                <span className="font-bold text-confirmed">
                   ~ {Math.round(getDistance(userLat, userLng, selectedRequest.lat, selectedRequest.lng) * 2 + 5)} minutes
                 </span>
               </div>
@@ -536,20 +536,20 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
 
             {/* Success state (Revealed Phone) */}
             {revealedPhone ? (
-              <div className="bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 p-4 rounded-xl space-y-3 text-center">
+              <div className="bg-confirmed/10/40 border border-emerald-500/50 text-confirmed p-4 rounded-xl space-y-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 font-bold text-sm">
                   <CheckCircle2 className="h-5 w-5" /> Phone Number Shared
                 </div>
                 <p className="text-[11px] leading-relaxed">
                   The hospital coordinator has been notified. Please contact them immediately:
                 </p>
-                <div className="text-lg font-black text-white flex items-center justify-center gap-2 mt-2 bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
-                  <Phone className="h-5 w-5 text-emerald-400" /> {revealedPhone}
+                <div className="text-lg font-black text-white flex items-center justify-center gap-2 mt-2 bg-void p-2.5 rounded-lg border border-border">
+                  <Phone className="h-5 w-5 text-confirmed" /> {revealedPhone}
                 </div>
               </div>
             ) : (
-              <div className="text-[11px] text-[#9090A0] text-center leading-relaxed">
-                🛡️ Your phone number will only be shared with the hospital coordinator to coordinate travel.
+              <div className="text-[11px] text-text-2 text-center leading-relaxed">
+                ðŸ›¡ï¸ Your phone number will only be shared with the hospital coordinator to coordinate travel.
               </div>
             )}
 
@@ -559,14 +559,14 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
                 <>
                   <button
                     onClick={() => setResponseModalOpen(false)}
-                    className="flex-1 py-3 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg text-xs font-bold transition-all"
+                    className="flex-1 py-3 border border-border text-text-2 hover:text-white rounded-lg text-xs font-bold transition-all"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={confirmResponse}
                     disabled={submittingResponse}
-                    className="flex-1 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                    className="flex-1 py-3 bg-vital hover:bg-vital text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                   >
                     {submittingResponse ? "Confirming..." : "Yes, I Can Donate"}
                   </button>
@@ -574,7 +574,7 @@ export default function LiveInteractiveMap({ userLat, userLng }: LiveInteractive
               ) : (
                 <button
                   onClick={() => setResponseModalOpen(false)}
-                  className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-all"
+                  className="w-full py-3 bg-surface-2 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-all"
                 >
                   Close Window
                 </button>

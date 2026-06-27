@@ -10,8 +10,8 @@ const LiveInteractiveMap = dynamic(
   { 
     ssr: false, 
     loading: () => (
-      <div className="w-full h-[88vh] bg-[#0A0A0A] flex flex-col items-center justify-center text-zinc-500 gap-3 border-t border-zinc-900">
-        <Compass className="h-10 w-10 text-[#C41E3A] animate-spin" />
+      <div className="w-full h-[88vh] bg-void flex flex-col items-center justify-center text-text-3 gap-3 border-t border-zinc-900">
+        <Compass className="h-10 w-10 text-vital animate-spin" />
         <span className="text-sm font-semibold tracking-wider">Locating user & mounting live network map...</span>
       </div>
     ) 
@@ -44,15 +44,15 @@ export default function LiveMapPage() {
 
   if (!userCoords) {
     return (
-      <div className="w-full h-[88vh] bg-[#0A0A0A] flex flex-col items-center justify-center text-zinc-500 gap-3 border-t border-zinc-900">
-        <Compass className="h-10 w-10 text-[#C41E3A] animate-spin" />
+      <div className="w-full h-[88vh] bg-void flex flex-col items-center justify-center text-text-3 gap-3 border-t border-zinc-900">
+        <Compass className="h-10 w-10 text-vital animate-spin" />
         <span className="text-sm font-semibold tracking-wider">Mounting live network map...</span>
       </div>
     );
   }
 
   return (
-    <main className="w-full h-full bg-[#0A0A0A]">
+    <main className="w-full h-full bg-void">
       <LiveInteractiveMap userLat={userCoords.lat} userLng={userCoords.lng} />
     </main>
   );

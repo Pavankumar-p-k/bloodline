@@ -38,25 +38,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
-      <div className="max-w-md w-full space-y-8 bg-[#1A1A1A] p-8 rounded-2xl border border-red-900/30 shadow-[0_8px_32px_0_rgba(196,30,58,0.1)] backdrop-blur">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-void">
+      <div className="max-w-md w-full space-y-8 bg-surface p-8 rounded-2xl border border-vital-dim shadow-vital-glow backdrop-blur">
         
         {/* Brand Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-950/50 border border-red-600/40 text-red-500 mb-4 animate-pulse">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-vital-dim border border-vital-mid text-vital mb-4 animate-pulse">
             <HeartPulse className="h-9 w-9" />
           </div>
-          <h2 className="text-3xl font-extrabold text-[#F5F5F5] tracking-tight">
+          <h2 className="text-3xl font-extrabold text-text tracking-tight">
             Welcome back
           </h2>
-          <p className="mt-2 text-sm text-[#9090A0]">
+          <p className="mt-2 text-sm text-text-2">
             Sign in to your Bloodline response account
           </p>
         </div>
 
         {/* Error alert */}
         {errorMsg && (
-          <div className="bg-red-950/40 border border-red-600/50 text-red-400 p-3 rounded-lg text-sm text-center">
+          <div className="bg-vital-dim border border-vital-mid text-vital p-3 rounded-lg text-sm text-center">
             {errorMsg}
           </div>
         )}
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 Email address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-3">
                   <Mail className="h-5 w-5" />
                 </div>
                 <input
@@ -81,7 +81,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none rounded-xl relative block w-full pl-10 pr-3 py-3 border border-zinc-800 bg-[#0F0F0F] text-[#F5F5F5] placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent transition-all text-sm"
+                  className="appearance-none rounded-xl relative block w-full pl-10 pr-3 py-3 border border-border bg-surface-2 text-text placeholder-text-3 focus:outline-none focus:ring-2 focus:ring-vital focus:border-transparent transition-all text-sm"
                   placeholder="Enter email address"
                 />
               </div>
@@ -93,7 +93,7 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-3">
                   <Lock className="h-5 w-5" />
                 </div>
                 <input
@@ -104,7 +104,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-xl relative block w-full pl-10 pr-3 py-3 border border-zinc-800 bg-[#0F0F0F] text-[#F5F5F5] placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent transition-all text-sm"
+                  className="appearance-none rounded-xl relative block w-full pl-10 pr-3 py-3 border border-border bg-surface-2 text-text placeholder-text-3 focus:outline-none focus:ring-2 focus:ring-vital focus:border-transparent transition-all text-sm"
                   placeholder="Enter your password"
                 />
               </div>
@@ -116,7 +116,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#C41E3A] hover:bg-[#8B0000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A0A0A] focus:ring-[#C41E3A] transition-all disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-vital hover:bg-vital focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-void focus:ring-vital transition-all disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center">
@@ -136,9 +136,9 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center mt-6">
-          <p className="text-sm text-[#9090A0]">
+          <p className="text-sm text-text-2">
             Don't have an account?{" "}
-            <Link href="/auth/signup" className="font-medium text-[#C41E3A] hover:text-[#8B0000] underline underline-offset-4">
+            <Link href="/auth/signup" className="font-medium text-vital hover:text-[#8B0000] underline underline-offset-4">
               Sign up now
             </Link>
           </p>

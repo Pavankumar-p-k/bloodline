@@ -15,7 +15,7 @@ import {
 // Dynamically import Leaflet Map to prevent Next.js SSR issues
 const LocationPickerMap = dynamic(
   () => import("../../../components/LocationPickerMap"),
-  { ssr: false, loading: () => <div className="h-64 bg-zinc-900 animate-pulse rounded-xl border border-zinc-800 flex items-center justify-center text-zinc-500">Loading Map...</div> }
+  { ssr: false, loading: () => <div className="h-64 bg-surface animate-pulse rounded-xl border border-border flex items-center justify-center text-text-3">Loading Map...</div> }
 );
 
 export default function DonorRegisterPage() {
@@ -188,7 +188,7 @@ export default function DonorRegisterPage() {
     const grad = ctx.createLinearGradient(0, 0, 600, 350);
     grad.addColorStop(0, "#8B0000");
     grad.addColorStop(0.5, "#1A1A1A");
-    grad.addColorStop(1, "#0A0A0A");
+    grad.addColorStop(1, "#060608");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 600, 350);
 
@@ -238,7 +238,7 @@ export default function DonorRegisterPage() {
     // Watermark Blood Drop Icon
     ctx.fillStyle = "#C41E3A";
     ctx.font = "bold 110px sans-serif";
-    ctx.fillText("🩸", 460, 210);
+    ctx.fillText("ðŸ©¸", 460, 210);
 
     // Footer saving lives slogan
     ctx.fillStyle = "#F5F5F5";
@@ -256,7 +256,7 @@ export default function DonorRegisterPage() {
   const shareWhatsApp = () => {
     if (!registeredDonor) return;
     const text = encodeURIComponent(
-      `🔴 I just registered as a verified Blood Donor on Bloodline! ❤️\nBlood Group: ${registeredDonor.blood_group}\nCity: ${registeredDonor.city}\nJoin me in saving lives today. Sign up at: http://localhost:3000`
+      `ðŸ”´ I just registered as a verified Blood Donor on Bloodline! â¤ï¸\nBlood Group: ${registeredDonor.blood_group}\nCity: ${registeredDonor.city}\nJoin me in saving lives today. Sign up at: http://localhost:3000`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   };
@@ -265,21 +265,21 @@ export default function DonorRegisterPage() {
     <div className="max-w-2xl mx-auto py-10 px-4">
       {/* Page Title */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-extrabold text-[#F5F5F5]">Donor Registration</h1>
-        <p className="text-sm text-[#9090A0] mt-2">Become a lifesaver in under 3 minutes</p>
+        <h1 className="text-3xl font-extrabold text-text">Donor Registration</h1>
+        <p className="text-sm text-text-2 mt-2">Become a lifesaver in under 3 minutes</p>
       </div>
 
       {/* Progress Bar (Visible only during input steps) */}
       {step <= 3 && (
         <div className="mb-8">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#9090A0] mb-2 uppercase tracking-widest">
-            <span className={step >= 1 ? "text-[#C41E3A]" : ""}>1. Personal</span>
-            <span className={step >= 2 ? "text-[#C41E3A]" : ""}>2. Medical</span>
-            <span className={step >= 3 ? "text-[#C41E3A]" : ""}>3. Location</span>
+          <div className="flex items-center justify-between text-xs font-semibold text-text-2 mb-2 uppercase tracking-widest">
+            <span className={step >= 1 ? "text-vital" : ""}>1. Personal</span>
+            <span className={step >= 2 ? "text-vital" : ""}>2. Medical</span>
+            <span className={step >= 3 ? "text-vital" : ""}>3. Location</span>
           </div>
-          <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-surface-2 h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-[#C41E3A] h-full transition-all duration-300 shadow-[0_0_8px_#C41E3A]" 
+              className="bg-vital h-full transition-all duration-300 shadow-vital-glow" 
               style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
@@ -288,7 +288,7 @@ export default function DonorRegisterPage() {
 
       {/* Disqualification Banner */}
       {step <= 2 && activeError && (
-        <div className="mb-6 p-4 rounded-xl border border-red-500/50 bg-red-950/40 text-red-400 flex items-start gap-3">
+        <div className="mb-6 p-4 rounded-xl border border-vital-mid bg-vital-dim text-vital flex items-start gap-3">
           <AlertOctagon className="h-5 w-5 mt-0.5 flex-shrink-0" />
           <div>
             <h4 className="font-semibold text-sm">Eligibility Disqualification</h4>
@@ -299,43 +299,43 @@ export default function DonorRegisterPage() {
 
       {/* STEP 1: Personal Info */}
       {step === 1 && (
-        <div className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-zinc-800 space-y-6">
-          <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-            <ShieldCheck className="h-6 w-6 text-[#C41E3A]" />
-            <h3 className="text-lg font-bold text-[#F5F5F5]">Step 1 — Personal Details</h3>
+        <div className="bg-surface p-6 sm:p-8 rounded-2xl border border-border space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <ShieldCheck className="h-6 w-6 text-vital" />
+            <h3 className="text-lg font-bold text-text">Step 1 â€” Personal Details</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Full Name</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Full Name</label>
               <input 
                 type="text" 
                 placeholder="Enter your full name" 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Age (18-65)</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Age (18-65)</label>
               <input 
                 type="number" 
                 placeholder="Age" 
                 value={age}
                 onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Gender</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Gender</label>
               <select 
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>
@@ -345,22 +345,22 @@ export default function DonorRegisterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Aadhar Last 4 Digits</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Aadhar Last 4 Digits</label>
               <input 
                 type="text" 
                 maxLength={4}
                 placeholder="xxxx" 
                 value={aadhar}
                 onChange={(e) => setAadhar(e.target.value.replace(/\D/g, ""))}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
           </div>
 
           {/* OTP phone verification section */}
-          <div className="border-t border-zinc-800 pt-6 space-y-4">
+          <div className="border-t border-border pt-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Phone Number (OTP Verification Required)</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Phone Number (OTP Verification Required)</label>
               <div className="flex gap-2">
                 <input 
                   type="text" 
@@ -368,18 +368,18 @@ export default function DonorRegisterPage() {
                   placeholder="Enter 10-digit number" 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  className="flex-1 bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A] disabled:opacity-55"
+                  className="flex-1 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital disabled:opacity-55"
                 />
                 {!phoneVerified ? (
                   <button 
                     type="button"
                     onClick={sendOTP}
-                    className="px-4 bg-red-950/40 border border-[#C41E3A]/40 text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                    className="px-4 bg-vital-dim border border-vital/40 text-vital hover:bg-vital hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                   >
                     <Smartphone className="h-4 w-4" /> Send OTP
                   </button>
                 ) : (
-                  <span className="px-4 bg-emerald-950/30 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <span className="px-4 bg-confirmed/5 text-confirmed border border-confirmed/20 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4" /> Verified
                   </span>
                 )}
@@ -387,20 +387,20 @@ export default function DonorRegisterPage() {
             </div>
 
             {otpSent && !phoneVerified && (
-              <div className="bg-[#0F0F0F] p-4 rounded-xl border border-zinc-800 space-y-2">
-                <p className="text-xs text-[#9090A0]">Enter verification OTP code:</p>
+              <div className="bg-surface-2 p-4 rounded-xl border border-border space-y-2">
+                <p className="text-xs text-text-2">Enter verification OTP code:</p>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     placeholder="Enter code" 
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white"
+                    className="flex-1 bg-void border border-border rounded-lg px-3 py-2 text-sm text-white"
                   />
                   <button 
                     type="button"
                     onClick={verifyOTP}
-                    className="bg-[#C41E3A] hover:bg-[#8B0000] text-white px-4 rounded-lg text-xs font-bold"
+                    className="bg-vital hover:bg-vital text-white px-4 rounded-lg text-xs font-bold"
                   >
                     Verify Code
                   </button>
@@ -409,11 +409,11 @@ export default function DonorRegisterPage() {
             )}
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-zinc-800">
+          <div className="flex justify-end pt-4 border-t border-border">
             <button
               onClick={() => setStep(2)}
               disabled={!fullName || !age || !gender || !phoneVerified || activeError !== null}
-              className="px-6 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all flex items-center gap-1"
+              className="px-6 py-3 bg-vital hover:bg-vital text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all flex items-center gap-1"
             >
               Continue to Medical Info
             </button>
@@ -423,15 +423,15 @@ export default function DonorRegisterPage() {
 
       {/* STEP 2: Medical Info */}
       {step === 2 && (
-        <div className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-zinc-800 space-y-6">
-          <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-            <Heart className="h-6 w-6 text-[#C41E3A]" />
-            <h3 className="text-lg font-bold text-[#F5F5F5]">Step 2 — Medical Information</h3>
+        <div className="bg-surface p-6 sm:p-8 rounded-2xl border border-border space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <Heart className="h-6 w-6 text-vital" />
+            <h3 className="text-lg font-bold text-text">Step 2 â€” Medical Information</h3>
           </div>
 
           {/* Blood group visual selector */}
           <div>
-            <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-3">Select Blood Group</label>
+            <label className="block text-xs font-semibold text-text-2 uppercase mb-3">Select Blood Group</label>
             <div className="grid grid-cols-4 gap-3">
               {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => (
                 <button
@@ -440,11 +440,11 @@ export default function DonorRegisterPage() {
                   onClick={() => setBloodGroup(bg)}
                   className={`relative p-3 rounded-xl border flex flex-col items-center justify-center transition-all ${
                     bloodGroup === bg 
-                      ? 'border-[#C41E3A] bg-red-950/20 text-[#C41E3A] shadow-[0_0_12px_rgba(196,30,58,0.2)]' 
-                      : 'border-zinc-800 bg-[#0F0F0F] text-[#9090A0] hover:border-zinc-700'
+                      ? 'border-vital bg-vital-dim text-vital shadow-[0_0_12px_rgba(196,30,58,0.2)]' 
+                      : 'border-border bg-surface-2 text-text-2 hover:border-border-2'
                   }`}
                 >
-                  <span className="text-2xl mb-1">🩸</span>
+                  <span className="text-2xl mb-1">ðŸ©¸</span>
                   <span className="font-extrabold text-sm">{bg}</span>
                 </button>
               ))}
@@ -453,37 +453,37 @@ export default function DonorRegisterPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Weight (kg)</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Weight (kg)</label>
               <input 
                 type="number" 
                 placeholder="e.g. 62" 
                 value={weight}
                 onChange={(e) => setWeight(e.target.value === "" ? "" : Number(e.target.value))}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Last Donation Date (Optional)</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Last Donation Date (Optional)</label>
               <input 
                 type="date" 
                 value={lastDonationDate}
                 onChange={(e) => setLastDonationDate(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
           </div>
 
           {/* Current medications toggle */}
-          <div className="flex items-center justify-between bg-[#0F0F0F] p-4 rounded-xl border border-zinc-800">
+          <div className="flex items-center justify-between bg-surface-2 p-4 rounded-xl border border-border">
             <div>
-              <h4 className="text-sm font-semibold text-[#F5F5F5]">Current Medications</h4>
-              <p className="text-xs text-[#9090A0] mt-0.5">Are you currently taking any prescription drugs?</p>
+              <h4 className="text-sm font-semibold text-text">Current Medications</h4>
+              <p className="text-xs text-text-2 mt-0.5">Are you currently taking any prescription drugs?</p>
             </div>
             <button
               type="button"
               onClick={() => setHasMeds(!hasMeds)}
-              className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${hasMeds ? 'bg-[#C41E3A]' : 'bg-zinc-700'}`}
+              className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${hasMeds ? 'bg-vital' : 'bg-zinc-700'}`}
             >
               <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-200 ${hasMeds ? 'translate-x-6' : 'translate-x-0'}`} />
             </button>
@@ -491,49 +491,49 @@ export default function DonorRegisterPage() {
 
           {/* Medical conditions checklist */}
           <div className="space-y-3">
-            <label className="block text-xs font-semibold text-[#9090A0] uppercase">Medical Checklist (Chronic Diseases)</label>
-            <div className="space-y-2 bg-[#0F0F0F] p-4 rounded-xl border border-zinc-800">
-              <label className="flex items-center gap-3 text-sm text-[#9090A0] cursor-pointer">
+            <label className="block text-xs font-semibold text-text-2 uppercase">Medical Checklist (Chronic Diseases)</label>
+            <div className="space-y-2 bg-surface-2 p-4 rounded-xl border border-border">
+              <label className="flex items-center gap-3 text-sm text-text-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={conditions.diabetes}
                   onChange={(e) => setConditions({ ...conditions, diabetes: e.target.checked })}
-                  className="rounded border-zinc-800 text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950" 
+                  className="rounded border-border text-vital focus:ring-vital bg-void" 
                 />
                 Diabetes
               </label>
-              <label className="flex items-center gap-3 text-sm text-[#9090A0] cursor-pointer">
+              <label className="flex items-center gap-3 text-sm text-text-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={conditions.hiv}
                   onChange={(e) => setConditions({ ...conditions, hiv: e.target.checked })}
-                  className="rounded border-zinc-800 text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950" 
+                  className="rounded border-border text-vital focus:ring-vital bg-void" 
                 />
                 HIV / AIDS
               </label>
-              <label className="flex items-center gap-3 text-sm text-[#9090A0] cursor-pointer">
+              <label className="flex items-center gap-3 text-sm text-text-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={conditions.hepatitis}
                   onChange={(e) => setConditions({ ...conditions, hepatitis: e.target.checked })}
-                  className="rounded border-zinc-800 text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950" 
+                  className="rounded border-border text-vital focus:ring-vital bg-void" 
                 />
                 Hepatitis (A/B/C)
               </label>
             </div>
           </div>
 
-          <div className="flex justify-between pt-4 border-t border-zinc-800">
+          <div className="flex justify-between pt-4 border-t border-border">
             <button
               onClick={() => setStep(1)}
-              className="px-6 py-3 border border-zinc-800 text-[#9090A0] hover:text-white rounded-lg text-sm font-semibold transition-all"
+              className="px-6 py-3 border border-border text-text-2 hover:text-white rounded-lg text-sm font-semibold transition-all"
             >
               Back
             </button>
             <button
               onClick={() => setStep(3)}
               disabled={!bloodGroup || !weight || activeError !== null}
-              className="px-6 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all"
+              className="px-6 py-3 bg-vital hover:bg-vital text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all"
             >
               Continue to Location
             </button>
@@ -543,55 +543,55 @@ export default function DonorRegisterPage() {
 
       {/* STEP 3: Location & Availability */}
       {step === 3 && (
-        <div className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-zinc-800 space-y-6">
-          <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-            <MapPin className="h-6 w-6 text-[#C41E3A]" />
-            <h3 className="text-lg font-bold text-[#F5F5F5]">Step 3 — Location & Preferences</h3>
+        <div className="bg-surface p-6 sm:p-8 rounded-2xl border border-border space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <MapPin className="h-6 w-6 text-vital" />
+            <h3 className="text-lg font-bold text-text">Step 3 â€” Location & Preferences</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">City</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">City</label>
               <input 
                 type="text" 
                 placeholder="e.g. Bangalore" 
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Area / Locality</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Area / Locality</label>
               <input 
                 type="text" 
                 placeholder="e.g. Indiranagar" 
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               />
             </div>
           </div>
 
           {/* Leaflet Map selector */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs font-semibold text-[#9090A0] uppercase">
+            <div className="flex justify-between items-center text-xs font-semibold text-text-2 uppercase">
               <span>Approximate Location Pin Drop</span>
               <button 
                 type="button" 
                 onClick={handleGPSDetect} 
-                className="text-[#C41E3A] hover:underline"
+                className="text-vital hover:underline"
               >
                 [Auto-detect GPS]
               </button>
             </div>
             <LocationPickerMap lat={lat} lng={lng} onChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} />
-            <p className="text-[11px] text-[#9090A0] italic">Note: Only city/area level coordinates are saved publicly for your privacy protection.</p>
+            <p className="text-[11px] text-text-2 italic">Note: Only city/area level coordinates are saved publicly for your privacy protection.</p>
           </div>
 
           {/* Availability Details */}
           <div>
-            <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-2">Availability Status</label>
+            <label className="block text-xs font-semibold text-text-2 uppercase mb-2">Availability Status</label>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <input 
@@ -600,9 +600,9 @@ export default function DonorRegisterPage() {
                   id="avail-now" 
                   checked={availability === "available_now"}
                   onChange={() => setAvailability("available_now")}
-                  className="text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950 border-zinc-800"
+                  className="text-vital focus:ring-vital bg-void border-border"
                 />
-                <label htmlFor="avail-now" className="text-sm text-[#F5F5F5] cursor-pointer">Available Now</label>
+                <label htmlFor="avail-now" className="text-sm text-text cursor-pointer">Available Now</label>
               </div>
 
               <div className="flex items-center gap-3">
@@ -612,9 +612,9 @@ export default function DonorRegisterPage() {
                   id="avail-unavail" 
                   checked={availability === "unavailable"}
                   onChange={() => setAvailability("unavailable")}
-                  className="text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950 border-zinc-800"
+                  className="text-vital focus:ring-vital bg-void border-border"
                 />
-                <label htmlFor="avail-unavail" className="text-sm text-[#F5F5F5] cursor-pointer">Unavailable</label>
+                <label htmlFor="avail-unavail" className="text-sm text-text cursor-pointer">Unavailable</label>
               </div>
 
               <div className="flex items-center gap-3">
@@ -624,9 +624,9 @@ export default function DonorRegisterPage() {
                   id="avail-after" 
                   checked={availability === "available_after"}
                   onChange={() => setAvailability("available_after")}
-                  className="text-[#C41E3A] focus:ring-[#C41E3A] bg-zinc-950 border-zinc-800"
+                  className="text-vital focus:ring-vital bg-void border-border"
                 />
-                <label htmlFor="avail-after" className="text-sm text-[#F5F5F5] cursor-pointer">Available After date</label>
+                <label htmlFor="avail-after" className="text-sm text-text cursor-pointer">Available After date</label>
               </div>
             </div>
 
@@ -636,7 +636,7 @@ export default function DonorRegisterPage() {
                   type="date" 
                   value={availableAfterDate}
                   onChange={(e) => setAvailableAfterDate(e.target.value)}
-                  className="bg-[#0F0F0F] border border-zinc-800 rounded-xl px-3 py-2 text-sm text-[#F5F5F5]"
+                  className="bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-text"
                 />
               </div>
             )}
@@ -645,7 +645,7 @@ export default function DonorRegisterPage() {
           {/* Preferences */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Max Travel Distance ({maxTravelKm === 100 ? "Any" : `${maxTravelKm} km`})</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Max Travel Distance ({maxTravelKm === 100 ? "Any" : `${maxTravelKm} km`})</label>
               <input 
                 type="range" 
                 min={2} 
@@ -653,9 +653,9 @@ export default function DonorRegisterPage() {
                 step={maxTravelKm > 20 ? 10 : 3} 
                 value={maxTravelKm}
                 onChange={(e) => setMaxTravelKm(Number(e.target.value))}
-                className="w-full accent-[#C41E3A] bg-zinc-800"
+                className="w-full accent-vital bg-surface-2"
               />
-              <div className="flex justify-between text-[10px] text-[#9090A0] mt-1 font-semibold">
+              <div className="flex justify-between text-[10px] text-text-2 mt-1 font-semibold">
                 <span>2km</span>
                 <span>5km</span>
                 <span>10km</span>
@@ -665,11 +665,11 @@ export default function DonorRegisterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#9090A0] uppercase mb-1">Notification Channel</label>
+              <label className="block text-xs font-semibold text-text-2 uppercase mb-1">Notification Channel</label>
               <select 
                 value={notifPreference}
                 onChange={(e) => setNotifPreference(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-[#F5F5F5] focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:ring-2 focus:ring-vital"
               >
                 <option value="all">All Channels</option>
                 <option value="sms">SMS Only</option>
@@ -679,17 +679,17 @@ export default function DonorRegisterPage() {
             </div>
           </div>
 
-          <div className="flex justify-between pt-4 border-t border-zinc-800">
+          <div className="flex justify-between pt-4 border-t border-border">
             <button
               onClick={() => setStep(2)}
-              className="px-6 py-3 border border-zinc-800 text-[#9090A0] hover:text-white rounded-lg text-sm font-semibold transition-all"
+              className="px-6 py-3 border border-border text-text-2 hover:text-white rounded-lg text-sm font-semibold transition-all"
             >
               Back
             </button>
             <button
               onClick={handleSubmitForm}
               disabled={loading || !city || !area}
-              className="px-6 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all flex items-center gap-1.5"
+              className="px-6 py-3 bg-vital hover:bg-vital text-white rounded-lg text-sm font-bold disabled:opacity-40 transition-all flex items-center gap-1.5"
             >
               {loading ? "Registering..." : "Submit Registration"}
             </button>
@@ -699,41 +699,41 @@ export default function DonorRegisterPage() {
 
       {/* STEP 4: Confirmation screen */}
       {step === 4 && registeredDonor && (
-        <div className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-zinc-800 text-center space-y-6 animate-fade-slide">
+        <div className="bg-surface p-6 sm:p-8 rounded-2xl border border-border text-center space-y-6 animate-fade-slide">
           
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-950/60 border border-emerald-500 text-emerald-400 mb-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-confirmed/10 border border-emerald-500 text-confirmed mb-2">
             <CheckCircle2 className="h-9 w-9" />
           </div>
 
-          <h2 className="text-3xl font-extrabold text-[#F5F5F5]">You are now saving lives</h2>
-          <p className="text-sm text-[#9090A0] max-w-md mx-auto">
+          <h2 className="text-3xl font-extrabold text-text">You are now saving lives</h2>
+          <p className="text-sm text-text-2 max-w-md mx-auto">
             Your donor profile is active and verified. You will receive immediate notifications when a patient or hospital matching your blood type makes an emergency request in your area.
           </p>
 
           {/* Digital ID Card Preview */}
-          <div className="w-full max-w-md mx-auto aspect-[1.71/1] bg-gradient-to-br from-red-950 to-zinc-950 rounded-2xl p-6 border border-[#C41E3A] text-left relative overflow-hidden shadow-[0_0_25px_rgba(196,30,58,0.2)]">
+          <div className="w-full max-w-md mx-auto aspect-[1.71/1] bg-gradient-to-br from-red-950 to-zinc-950 rounded-2xl p-6 border border-vital text-left relative overflow-hidden shadow-[0_0_25px_rgba(196,30,58,0.2)]">
             {/* Chip icon design */}
-            <div className="absolute top-6 right-6 font-bold text-3xl opacity-80">🩸</div>
+            <div className="absolute top-6 right-6 font-bold text-3xl opacity-80">ðŸ©¸</div>
             
             <div className="space-y-4">
               <div>
-                <h4 className="text-[#C41E3A] text-sm font-extrabold tracking-widest uppercase">Bloodline Donor Card</h4>
-                <p className="text-[10px] text-[#9090A0]">EMERGENCY RESPONSE NETWORK</p>
+                <h4 className="text-vital text-sm font-extrabold tracking-widest uppercase">Bloodline Donor Card</h4>
+                <p className="text-[10px] text-text-2">EMERGENCY RESPONSE NETWORK</p>
               </div>
 
               <div className="space-y-1 mt-6">
-                <p className="text-[10px] text-[#9090A0] uppercase tracking-widest">Name</p>
-                <p className="text-[#F5F5F5] font-bold text-base">{registeredDonor.full_name}</p>
+                <p className="text-[10px] text-text-2 uppercase tracking-widest">Name</p>
+                <p className="text-text font-bold text-base">{registeredDonor.full_name}</p>
               </div>
 
               <div className="flex justify-between items-end mt-4">
                 <div>
-                  <p className="text-[10px] text-[#9090A0] uppercase tracking-widest">Blood Type</p>
-                  <p className="text-[#C41E3A] font-extrabold text-2xl leading-none">{registeredDonor.blood_group}</p>
+                  <p className="text-[10px] text-text-2 uppercase tracking-widest">Blood Type</p>
+                  <p className="text-vital font-extrabold text-2xl leading-none">{registeredDonor.blood_group}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#9090A0] uppercase tracking-widest text-right">Serial No.</p>
-                  <p className="text-[#F5F5F5] font-mono text-xs text-right uppercase">{registeredDonor.id.substring(0, 15)}...</p>
+                  <p className="text-[10px] text-text-2 uppercase tracking-widest text-right">Serial No.</p>
+                  <p className="text-text font-mono text-xs text-right uppercase">{registeredDonor.id.substring(0, 15)}...</p>
                 </div>
               </div>
             </div>
@@ -743,7 +743,7 @@ export default function DonorRegisterPage() {
           <div className="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto pt-4">
             <button
               onClick={downloadDonorCard}
-              className="flex-1 px-4 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5"
+              className="flex-1 px-4 py-3 bg-vital hover:bg-vital text-white rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5"
             >
               <Download className="h-4 w-4" /> Download Card
             </button>
@@ -755,10 +755,10 @@ export default function DonorRegisterPage() {
             </button>
           </div>
 
-          <div className="pt-4 border-t border-zinc-800 mt-6">
+          <div className="pt-4 border-t border-border mt-6">
             <button
               onClick={() => router.push("/donor/dashboard")}
-              className="text-sm font-bold text-[#9090A0] hover:text-white transition-all underline underline-offset-4"
+              className="text-sm font-bold text-text-2 hover:text-white transition-all underline underline-offset-4"
             >
               Go to my Donor Dashboard
             </button>

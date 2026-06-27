@@ -129,27 +129,27 @@ export default function HospitalDashboard() {
 
   return (
     <ProtectedRoute role="hospital">
-      <main className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] pb-16 px-4">
+      <main className="min-h-screen bg-void text-text pb-16 px-4">
         <div className="max-w-5xl mx-auto space-y-8 pt-8">
           
           {/* HEADER SECTION */}
-          <header className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+          <header className="bg-surface border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
             <div>
-              <span className="text-xs font-semibold text-[#9090A0] uppercase tracking-widest block">Coordinator Command</span>
+              <span className="text-xs font-semibold text-text-2 uppercase tracking-widest block">Coordinator Command</span>
               <h1 className="text-2xl font-black text-white mt-1">Hospital Dashboard</h1>
-              <p className="text-xs text-[#9090A0] mt-0.5 font-mono">{user?.email}</p>
+              <p className="text-xs text-text-2 mt-0.5 font-mono">{user?.email}</p>
             </div>
             
             <div className="flex gap-3">
               <button 
                 onClick={() => router.push("/emergency")}
-                className="px-4 py-2.5 bg-[#C41E3A] hover:bg-[#8B0000] text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(196,30,58,0.2)]"
+                className="px-4 py-2.5 bg-vital hover:bg-vital text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-vital-glow"
               >
                 <Plus className="h-4 w-4" /> Create Request
               </button>
               <button 
                 onClick={handleLogout}
-                className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-surface hover:bg-surface-2 border border-border text-text hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
               >
                 <LogOut className="h-4 w-4" /> Sign Out
               </button>
@@ -158,24 +158,24 @@ export default function HospitalDashboard() {
 
           {/* ACTIVE REQUESTS LIST */}
           <section className="space-y-4">
-            <div className="flex justify-between items-center border-b border-zinc-850 pb-3">
+            <div className="flex justify-between items-center border-b border-border pb-3">
               <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <Heart className="h-5 w-5 text-[#C41E3A] animate-pulse" /> Emergency Broadcast Logs
+                <Heart className="h-5 w-5 text-vital animate-pulse" /> Emergency Broadcast Logs
               </h3>
-              <span className="text-xs text-[#9090A0] font-semibold">{requests.length} Broadcasted</span>
+              <span className="text-xs text-text-2 font-semibold">{requests.length} Broadcasted</span>
             </div>
 
             {loading ? (
               <div className="text-center py-12 space-y-3">
-                <Loader2 className="h-8 w-8 text-[#C41E3A] animate-spin mx-auto" />
-                <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Syncing database changes...</p>
+                <Loader2 className="h-8 w-8 text-vital animate-spin mx-auto" />
+                <p className="text-xs text-text-3 font-semibold uppercase tracking-wider">Syncing database changes...</p>
               </div>
             ) : requests.length === 0 ? (
-              <div className="bg-[#1A1A1A] border border-zinc-800 rounded-2xl p-12 text-center space-y-4">
-                <p className="text-sm text-[#9090A0]">No emergency requests registered under your coordinator account.</p>
+              <div className="bg-surface border border-border rounded-2xl p-12 text-center space-y-4">
+                <p className="text-sm text-text-2">No emergency requests registered under your coordinator account.</p>
                 <button
                   onClick={() => router.push("/emergency")}
-                  className="px-5 py-3 bg-[#C41E3A] hover:bg-[#8B0000] text-white font-bold rounded-lg text-xs transition-all inline-flex items-center gap-1"
+                  className="px-5 py-3 bg-vital hover:bg-vital text-white font-bold rounded-lg text-xs transition-all inline-flex items-center gap-1"
                 >
                   Create Your First Emergency Request <ArrowRight className="h-4 w-4" />
                 </button>
@@ -190,36 +190,36 @@ export default function HospitalDashboard() {
                   return (
                     <div 
                       key={req.id} 
-                      className={`bg-[#1A1A1A] border rounded-2xl p-6 shadow-xl space-y-6 relative overflow-hidden ${
-                        isFulfilled ? "border-zinc-850 opacity-80" : "border-zinc-800"
+                      className={`bg-surface border rounded-2xl p-6 shadow-xl space-y-6 relative overflow-hidden ${
+                        isFulfilled ? "border-border opacity-80" : "border-border"
                       }`}
                     >
                       {/* Header info */}
-                      <div className="flex justify-between items-start flex-wrap gap-4 border-b border-zinc-850 pb-4">
+                      <div className="flex justify-between items-start flex-wrap gap-4 border-b border-border pb-4">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="px-2.5 py-0.5 bg-red-950 text-[#C41E3A] font-black text-xs rounded border border-[#C41E3A]/20">
+                            <span className="px-2.5 py-0.5 bg-vital-dim text-vital font-black text-xs rounded border border-vital/20">
                               {req.blood_group_needed} Needed
                             </span>
                             <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${
-                              req.urgency_level === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-500/20" : "bg-amber-950 text-amber-400 border border-amber-500/20"
+                              req.urgency_level === "CRITICAL" ? "bg-vital-dim text-vital border border-vital-dim" : "bg-warning/10 text-warning border border-warning/20"
                             }`}>
                               {req.urgency_level}
                             </span>
-                            <span className="text-[10px] text-zinc-500">
+                            <span className="text-[10px] text-text-3">
                               Posted: {new Date(req.created_at).toLocaleDateString("en-IN")} at {new Date(req.created_at).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
                             </span>
                           </div>
                           
                           <h4 className="text-base font-bold text-white flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-[#C41E3A]" /> Hospital: {req.hospital_name}
+                            <MapPin className="h-4 w-4 text-vital" /> Hospital: {req.hospital_name}
                           </h4>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => router.push(`/emergency/status/${req.id}`)}
-                            className="px-3 py-1.5 bg-zinc-950 hover:bg-black border border-zinc-800 text-[#9090A0] hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                            className="px-3 py-1.5 bg-void hover:bg-black border border-border text-text-2 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1"
                           >
                             Track Live Page <ExternalLinkIcon className="h-3.5 w-3.5" />
                           </button>
@@ -237,11 +237,11 @@ export default function HospitalDashboard() {
 
                       {/* Donor responses detail */}
                       <div className="space-y-3">
-                        <h5 className="text-xs font-extrabold uppercase tracking-wider text-[#9090A0]">Matched Donor Responses ({resList.length})</h5>
+                        <h5 className="text-xs font-extrabold uppercase tracking-wider text-text-2">Matched Donor Responses ({resList.length})</h5>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                           {resList.length === 0 ? (
-                            <div className="text-xs text-zinc-500 italic py-2 col-span-3">No donors matched yet. Alert broadcasts are pending review or active routing.</div>
+                            <div className="text-xs text-text-3 italic py-2 col-span-3">No donors matched yet. Alert broadcasts are pending review or active routing.</div>
                           ) : (
                             resList.map((res: any) => {
                               const dInfo = res.donors;
@@ -253,22 +253,22 @@ export default function HospitalDashboard() {
                               return (
                                 <div 
                                   key={res.id} 
-                                  className="bg-[#0F0F0F] rounded-xl border border-zinc-850 p-4 space-y-2.5 transition-all hover:border-zinc-800"
+                                  className="bg-surface-2 rounded-xl border border-border p-4 space-y-2.5 transition-all hover:border-border"
                                 >
                                   <div className="flex justify-between items-center">
                                     <span className="text-xs font-bold text-white">{dInfo.full_name}</span>
-                                    <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 font-extrabold text-[9px] rounded">
+                                    <span className="px-2 py-0.5 bg-confirmed/10 text-confirmed font-extrabold text-[9px] rounded">
                                       {dInfo.blood_group}
                                     </span>
                                   </div>
 
-                                  <div className="text-[10px] text-zinc-400 space-y-1">
+                                  <div className="text-[10px] text-text-2 space-y-1">
                                     <div className="flex justify-between">
                                       <span>Travel ETA:</span>
                                       <span className="font-bold text-white">~ {eta} mins ({Math.round(distance * 10) / 10} km)</span>
                                     </div>
                                     <div className="flex justify-between items-center mt-1 border-t border-zinc-900 pt-1">
-                                      <Phone className="h-3 w-3 text-emerald-400" />
+                                      <Phone className="h-3 w-3 text-confirmed" />
                                       <span className="font-mono text-white text-[11px] font-bold">{dInfo.phone}</span>
                                     </div>
                                   </div>
