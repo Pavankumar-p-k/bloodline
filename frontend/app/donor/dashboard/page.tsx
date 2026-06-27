@@ -6,6 +6,7 @@ import ProtectedRoute from "../../../components/ProtectedRoute";
 import { supabase } from "../../../lib/supabaseClient";
 import { useAuth } from "../../../context/AuthContext";
 import { useToast } from "../../../components/ToastContext";
+import LiveLocationToggle from "../../../components/LiveLocationToggle";
 import { 
   Heart, Calendar, MapPin, ToggleLeft, ToggleRight, 
   Award, Clock, Compass, Activity, Bell, FileText, 
@@ -227,47 +228,41 @@ export default function DonorDashboard() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Background Dark Surface
-    ctx.fillStyle = "#111111";
+    ctx.fillStyle = "#060608";
     ctx.fillRect(0, 0, 800, 550);
 
-    // Frame
-    ctx.strokeStyle = "#C41E3A";
+    ctx.strokeStyle = "#E8192C";
     ctx.lineWidth = 10;
     ctx.strokeRect(20, 20, 760, 510);
-    ctx.strokeStyle = "#8B0000";
+    ctx.strokeStyle = "#9A0F1E";
     ctx.lineWidth = 2;
     ctx.strokeRect(32, 32, 736, 486);
 
-    // Header Text
-    ctx.fillStyle = "#F5F5F5";
+    ctx.fillStyle = "#ffffff";
     ctx.font = "bold 34px serif";
     ctx.textAlign = "center";
     ctx.fillText("CERTIFICATE OF APPRECIATION", 400, 110);
 
-    ctx.fillStyle = "#9090A0";
+    ctx.fillStyle = "#A0A0B0";
     ctx.font = "14px sans-serif";
     ctx.fillText("PROUDLY PRESENTED TO THE SAVIOR", 400, 170);
 
-    // Donor Name
-    ctx.fillStyle = "#C41E3A";
+    ctx.fillStyle = "#E8192C";
     ctx.font = "bold 30px sans-serif";
     ctx.fillText(donorRecord.full_name.toUpperCase(), 400, 220);
 
-    // Contribution text
-    ctx.fillStyle = "#9090A0";
+    ctx.fillStyle = "#A0A0B0";
     ctx.font = "15px sans-serif";
     ctx.fillText(`For selflessly donating ${donation.units_donated || 1} Unit of Blood on ${donation.donation_date}`, 400, 275);
     ctx.fillText(`at ${donation.hospital_name || "Emergency Medical Clinic"}`, 400, 305);
-    
+
     ctx.font = "14px sans-serif";
     ctx.fillText("Your noble act contributed directly to sustaining lives.", 400, 360);
 
-    ctx.fillStyle = "#C41E3A";
+    ctx.fillStyle = "#E8192C";
     ctx.font = "italic 16px serif";
-    ctx.fillText(`"Your blood. Someone's tomorrow."`, 400, 420);
+    ctx.fillText('"Your blood. Someone\'s tomorrow."', 400, 420);
 
-    // Signatures lines
     ctx.strokeStyle = "#404050";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -277,12 +272,12 @@ export default function DonorDashboard() {
     ctx.lineTo(660, 475);
     ctx.stroke();
 
-    ctx.fillStyle = "#9090A0";
+    ctx.fillStyle = "#A0A0B0";
     ctx.font = "11px sans-serif";
     ctx.fillText("MEDICAL COORDINATOR", 215, 495);
     ctx.fillText("BLOODLINE DIRECTOR", 585, 495);
 
-    ctx.fillStyle = "#C41E3A";
+    ctx.fillStyle = "#E8192C";
     ctx.font = "20px cursive";
     ctx.fillText("Dr. S. Mohan", 215, 465);
     ctx.fillText("Bloodline Team", 585, 465);
@@ -377,7 +372,7 @@ export default function DonorDashboard() {
                 {donorRecord.is_available ? (
                   <ToggleRight className="h-8 w-8 text-vital" />
                 ) : (
-                  <ToggleLeft className="h-8 w-8 text-zinc-600" />
+                      <ToggleLeft className="h-8 w-8 text-text-3" />
                 )}
               </button>
 
@@ -524,7 +519,7 @@ export default function DonorDashboard() {
                       <div key={don.id} className="relative group">
                         
                         {/* Bullet point indicator */}
-                        <div className="absolute -left-[23px] top-1.5 w-3.5 h-3.5 rounded-full bg-vital border-2 border-[#1A1A1A] shadow-vital-glow" />
+                        <div className="absolute -left-[23px] top-1.5 w-3.5 h-3.5 rounded-full bg-vital border-2 border-void shadow-vital-glow" />
 
                         <div className="bg-surface-2 border border-border/80 p-4 rounded-xl space-y-2.5">
                           <div className="flex justify-between items-start flex-wrap gap-2">
@@ -544,11 +539,11 @@ export default function DonorDashboard() {
                           <div className="grid grid-cols-2 gap-2 text-[11px] text-text-2">
                             <div>
                               <span className="text-text-3 block">Hospital</span>
-                              <span className="font-semibold text-zinc-200">{don.hospital_name}</span>
+                              <span className="font-semibold text-text">{don.hospital_name}</span>
                             </div>
                             <div>
                               <span className="text-text-3 block">Units Donated</span>
-                              <span className="font-semibold text-zinc-200">{don.units_donated || 1} Bag</span>
+                              <span className="font-semibold text-text">{don.units_donated || 1} Bag</span>
                             </div>
                           </div>
                         </div>
@@ -561,8 +556,9 @@ export default function DonorDashboard() {
 
             </div>
 
-            {/* RIGHT COLUMN: NOTIFICATION SETTINGS */}
+            {/* RIGHT COLUMN: LIVE LOCATION + NOTIFICATION SETTINGS */}
             <div className="space-y-8">
+              <LiveLocationToggle />
               
               <div className="bg-surface rounded-2xl border border-border p-6 space-y-6">
                 <div className="flex items-center gap-2 border-b border-border pb-3">
