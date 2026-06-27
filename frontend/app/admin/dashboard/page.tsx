@@ -203,7 +203,7 @@ export default function AdminDashboard() {
           <header className="flex justify-between items-center bg-surface border border-border rounded-2xl p-6 shadow-xl">
             <div>
               <span className="text-xs font-semibold text-text-2 uppercase tracking-widest block">Command Center</span>
-              <h1 className="text-2xl font-black text-white mt-1">Super Admin Dashboard</h1>
+              <h1 className="text-2xl font-black text-text mt-1">Super Admin Dashboard</h1>
             </div>
             <span className="px-3.5 py-1.5 bg-vital-dim border border-vital-mid text-vital text-xs font-black rounded-lg">
               SYSTEM ONLINE
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
                               <span className="font-bold text-white">{bg} Group</span>
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-0.5 font-bold rounded text-[9px] ${
-                                  isLow ? "bg-vital-dim text-vital border border-vital-dim" : "bg-confirmed/10 text-confirmed border border-confirmed/10"
+                                  isLow ? "bg-vital-dim text-vital border border-vital-dim" : "bg-confirmed/5 text-confirmed border border-confirmed/20"
                                 }`}>
                                   {isLow ? "CRITICAL SHORTAGE" : `${count} Available`}
                                 </span>
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
                                   d.is_suspended 
                                     ? "bg-vital-mid text-vital border border-vital-dim" 
                                     : d.is_verified 
-                                      ? "bg-confirmed/10 text-confirmed border border-confirmed/10" 
+                                      ? "bg-confirmed/5 text-confirmed border border-confirmed/20" 
                                       : "bg-surface-2 text-text-2"
                                 }`}>
                                   {d.is_suspended ? "SUSPENDED" : d.is_verified ? "VERIFIED" : "UNVERIFIED"}
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
                                 {!d.is_verified && (
                                   <button
                                     onClick={() => handleUpdateDonor(d.id, { is_verified: true })}
-                                    className="p-1.5 bg-confirmed/10 hover:bg-emerald-600 border border-confirmed/30 text-confirmed hover:text-white rounded-lg transition-all"
+                                    className="p-1.5 bg-confirmed/10 hover:brightness-90 border border-confirmed/30 text-confirmed hover:text-text rounded-lg transition-all"
                                     title="Verify Donor"
                                   >
                                     <Check className="h-3.5 w-3.5" />
@@ -404,7 +404,7 @@ export default function AdminDashboard() {
                                   onClick={() => handleUpdateDonor(d.id, { is_suspended: !d.is_suspended })}
                                   className={`p-1.5 border rounded-lg transition-all ${
                                     d.is_suspended 
-                                      ? 'bg-warning/10/50 border-amber-500/40 text-warning hover:bg-amber-600 hover:text-white' 
+                                      ? 'bg-warning/10 border-warning/30 text-warning hover:brightness-90 hover:text-text' 
                                       : 'bg-surface border-border text-text-2 hover:bg-surface-2'
                                   }`}
                                   title={d.is_suspended ? "Reactivate Donor" : "Suspend Donor"}
@@ -413,7 +413,7 @@ export default function AdminDashboard() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteDonor(d.id)}
-                                  className="p-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-white rounded-lg transition-all"
+                                  className="p-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-text rounded-lg transition-all"
                                   title="Delete Profile"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -506,7 +506,7 @@ export default function AdminDashboard() {
                                   {r.status !== "fulfilled" && (
                                     <button
                                       onClick={() => handleUpdateRequest(r.id, "fulfilled")}
-                                      className="px-2.5 py-1.5 bg-confirmed/10 hover:bg-emerald-600 border border-confirmed/30 text-confirmed hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                      className="px-2.5 py-1.5 bg-confirmed/10 hover:brightness-90 border border-confirmed/30 text-confirmed hover:text-text rounded-lg text-[10px] font-bold transition-all"
                                     >
                                       Fulfill
                                     </button>
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
                                   {r.status !== "fake" && (
                                     <button
                                       onClick={() => handleUpdateRequest(r.id, "fake")}
-                                      className="px-2.5 py-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                      className="px-2.5 py-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-text rounded-lg text-[10px] font-bold transition-all"
                                       title="Mark Fraudulent"
                                     >
                                       Flag Fake
@@ -523,7 +523,7 @@ export default function AdminDashboard() {
                                   {r.status !== "closed" && (
                                     <button
                                       onClick={() => handleUpdateRequest(r.id, "closed")}
-                                      className="px-2.5 py-1.5 bg-surface hover:bg-surface-2 border border-border text-text-2 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                      className="px-2.5 py-1.5 bg-surface hover:bg-surface-2 border border-border text-text-2 hover:text-text rounded-lg text-[10px] font-bold transition-all"
                                     >
                                       Close
                                     </button>
@@ -571,7 +571,7 @@ export default function AdminDashboard() {
                               <td className="py-3.5 pr-4">
                                 <button
                                   onClick={() => setReviewRequest(v)}
-                                  className="text-text-2 hover:text-white flex items-center gap-1 hover:underline text-[10px]"
+                                  className="text-text-2 hover:text-text flex items-center gap-1 hover:underline text-[10px]"
                                 >
                                   <FileText className="h-4 w-4 text-vital" /> View letterhead.png
                                 </button>
@@ -579,13 +579,13 @@ export default function AdminDashboard() {
                               <td className="py-3.5 text-right space-x-2">
                                 <button
                                   onClick={() => handleApproveDocument(v.id)}
-                                  className="px-3 py-1.5 bg-confirmed/10 hover:bg-emerald-600 border border-confirmed/30 text-confirmed hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                  className="px-3 py-1.5 bg-confirmed/10 hover:brightness-90 border border-confirmed/30 text-confirmed hover:text-text rounded-lg text-[10px] font-bold transition-all"
                                 >
                                   Approve
                                 </button>
                                 <button
                                   onClick={() => handleRejectDocument(v.id)}
-                                  className="px-3 py-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                                  className="px-3 py-1.5 bg-vital-dim hover:bg-vital border border-vital-mid text-vital hover:text-text rounded-lg text-[10px] font-bold transition-all"
                                 >
                                   Reject
                                 </button>
@@ -608,7 +608,7 @@ export default function AdminDashboard() {
                 
                 <button
                   onClick={() => setReviewRequest(null)}
-                  className="absolute top-4 right-4 text-text-3 hover:text-white"
+                  className="absolute top-4 right-4 text-text-3 hover:text-text"
                 >
                   <Eye className="h-5 w-5" />
                 </button>
@@ -621,7 +621,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Display File Image Preview */}
-                <div className="w-full h-64 rounded-xl border border-border overflow-hidden relative bg-black flex items-center justify-center">
+                <div className="w-full h-64 rounded-xl border border-border overflow-hidden relative bg-void flex items-center justify-center">
                   <img 
                     src={reviewRequest.verification_doc_url} 
                     alt="Letterhead slip" 
@@ -633,7 +633,7 @@ export default function AdminDashboard() {
                 <div className="flex gap-3 justify-end pt-3 border-t border-border">
                   <button
                     onClick={() => handleRejectDocument(reviewRequest.id)}
-                    className="px-4 py-2.5 bg-vital-dim border border-vital-mid text-vital hover:bg-vital hover:text-white rounded-lg text-xs font-bold transition-all"
+                    className="px-4 py-2.5 bg-vital-dim border border-vital-mid text-vital hover:bg-vital hover:text-text rounded-lg text-xs font-bold transition-all"
                   >
                     Reject Verification
                   </button>
