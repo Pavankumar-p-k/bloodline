@@ -59,21 +59,6 @@ create table public.donor_profiles (
 );
 alter table public.donor_profiles enable row level security;
 
--- ─── donor_live_locations ───
-create table public.donor_live_locations (
-  id              uuid primary key default gen_random_uuid(),
-  donor_id        uuid references public.donor_profiles(id) on delete cascade not null,
-  lat             float not null,
-  lng             float not null,
-  accuracy_meters int,
-  response_id     uuid references public.donor_responses(id) on delete cascade,
-  updated_at      timestamptz default now(),
-  expires_at      timestamptz not null
-);
-create index idx_live_locations_donor on public.donor_live_locations(donor_id);
-create index idx_live_locations_expires on public.donor_live_locations(expires_at);
-alter table public.donor_live_locations enable row level security;
-
 -- ─── hospital_profiles ───
 create table public.hospital_profiles (
   id                    uuid references public.profiles(id) on delete cascade primary key,
@@ -163,6 +148,21 @@ create table public.donor_responses (
 create index idx_responses_request on public.donor_responses(request_id);
 create index idx_responses_donor on public.donor_responses(donor_id);
 alter table public.donor_responses enable row level security;
+
+-- ─── donor_live_locations ───
+create table public.donor_live_locations (
+  id              uuid primary key default gen_random_uuid(),
+  donor_id        uuid references public.donor_profiles(id) on delete cascade not null,
+  lat             float not null,
+  lng             float not null,
+  accuracy_meters int,
+  response_id     uuid references public.donor_responses(id) on delete cascade,
+  updated_at      timestamptz default now(),
+  expires_at      timestamptz not null
+);
+create index idx_live_locations_donor on public.donor_live_locations(donor_id);
+create index idx_live_locations_expires on public.donor_live_locations(expires_at);
+alter table public.donor_live_locations enable row level security;
 
 -- ─── donations ───
 create table public.donations (
