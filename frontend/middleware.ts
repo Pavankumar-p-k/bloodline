@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getDashboardPath, getRequiredRoleForPath } from "./lib/auth";
 import { createSupabaseMiddlewareClient, getRoleForUser, hasSupabaseServerConfig } from "./lib/auth-server";
 
-const AUTH_PAGES = new Set(["/auth/login", "/auth/signup"]);
+const AUTH_PAGES = new Set(["/auth/login", "/auth/signup", "/auth/role-select"]);
 const AUTH_SETUP_PAGE = "/auth/setup";
 
 export async function middleware(req: NextRequest) {
@@ -62,10 +62,19 @@ export async function middleware(req: NextRequest) {
   if (AUTH_PAGES.has(pathname) && user) {
     const role = await getRoleForUser(supabase, user.id).catch(() => null);
     if (role) {
+      // Allow role-select page for new users without a role
+      if (pathname === "/auth/role-select") return res;
       const dashboardUrl = req.nextUrl.clone();
       dashboardUrl.pathname = getDashboardPath(role);
       dashboardUrl.search = "";
       return NextResponse.redirect(dashboardUrl);
+    }
+    // No role found — redirect to role-select if not already there
+    if (pathname !== "/auth/role-select" && pathname !== "/auth/setup") {
+      const roleUrl = req.nextUrl.clone();
+      roleUrl.pathname = "/auth/role-select";
+      roleUrl.search = "";
+      return NextResponse.redirect(roleUrl);
     }
   }
 
@@ -73,5 +82,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/auth/login", "/auth/signup", "/auth/setup", "/donor/:path*", "/hospital/:path*", "/admin/:path*"],
+  matcher: ["/auth/login", "/auth/signup", "/auth/role-select", "/auth/setup", "/donor/:path*", "/hospital/:path*", "/admin/:path*", "/onboarding/:path*"],
 };
