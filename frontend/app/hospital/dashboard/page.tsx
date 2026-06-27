@@ -136,8 +136,8 @@ export default function HospitalDashboard() {
           <header className="bg-surface border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
             <div>
               <span className="text-xs font-semibold text-text-2 uppercase tracking-widest block">Coordinator Command</span>
-              <h1 className="text-2xl font-black text-white mt-1">Hospital Dashboard</h1>
-              <p className="text-xs text-text-2 mt-0.5 font-mono">{user?.email}</p>
+              <h1 className="text-2xl font-black text-text mt-1">Hospital Dashboard</h1>
+              <p className="text-xs text-text-3 mt-0.5 font-mono">{user?.email}</p>
             </div>
             
             <div className="flex gap-3">
@@ -159,7 +159,7 @@ export default function HospitalDashboard() {
           {/* ACTIVE REQUESTS LIST */}
           <section className="space-y-4">
             <div className="flex justify-between items-center border-b border-border pb-3">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
+              <h3 className="font-bold text-base text-text flex items-center gap-2">
                 <Heart className="h-5 w-5 text-vital animate-pulse" /> Emergency Broadcast Logs
               </h3>
               <span className="text-xs text-text-2 font-semibold">{requests.length} Broadcasted</span>
@@ -211,7 +211,7 @@ export default function HospitalDashboard() {
                             </span>
                           </div>
                           
-                          <h4 className="text-base font-bold text-white flex items-center gap-1.5">
+                          <h4 className="text-base font-bold text-text flex items-center gap-1.5">
                             <MapPin className="h-4 w-4 text-vital" /> Hospital: {req.hospital_name}
                           </h4>
                         </div>
@@ -227,7 +227,7 @@ export default function HospitalDashboard() {
                           {!isFulfilled && (
                             <button
                               onClick={() => handleFulfillRequest(req.id)}
-                              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all"
+                              className="px-3.5 py-1.5 bg-confirmed hover:brightness-90 text-text rounded-lg text-xs font-bold transition-all"
                             >
                               Mark Fulfilled
                             </button>
@@ -256,7 +256,7 @@ export default function HospitalDashboard() {
                                   className="bg-surface-2 rounded-xl border border-border p-4 space-y-2.5 transition-all hover:border-border"
                                 >
                                   <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-white">{dInfo.full_name}</span>
+                                    <span className="text-xs font-bold text-text">{dInfo.full_name}</span>
                                     <span className="px-2 py-0.5 bg-confirmed/10 text-confirmed font-extrabold text-[9px] rounded">
                                       {dInfo.blood_group}
                                     </span>
@@ -265,11 +265,11 @@ export default function HospitalDashboard() {
                                   <div className="text-[10px] text-text-2 space-y-1">
                                     <div className="flex justify-between">
                                       <span>Travel ETA:</span>
-                                      <span className="font-bold text-white">~ {eta} mins ({Math.round(distance * 10) / 10} km)</span>
+                                      <span className="font-bold text-text">~ {eta} mins ({Math.round(distance * 10) / 10} km)</span>
                                     </div>
-                                    <div className="flex justify-between items-center mt-1 border-t border-zinc-900 pt-1">
+                                    <div className="flex justify-between items-center mt-1 border-t border-border pt-1">
                                       <Phone className="h-3 w-3 text-confirmed" />
-                                      <span className="font-mono text-white text-[11px] font-bold">{dInfo.phone}</span>
+                                      <span className="font-mono text-text text-[11px] font-bold">{dInfo.phone}</span>
                                     </div>
                                   </div>
                                 </div>
