@@ -6,6 +6,7 @@ import { AuthProvider } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import VitalBackground from "../components/VitalBackground";
 import { ToastProvider } from "../components/ToastContext";
+import { NotificationProvider } from "../context/NotificationContext";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   
@@ -37,12 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-void text-text font-body antialiased flex flex-col h-full">
         <VitalBackground />
         <AuthProvider>
-          <ToastProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1 w-full mx-auto">{children}</main>
-            </div>
-          </ToastProvider>
+          <NotificationProvider>
+            <ToastProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-1 w-full mx-auto">{children}</main>
+              </div>
+            </ToastProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>
